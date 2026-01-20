@@ -1,30 +1,20 @@
-import sqlite3
-# print("Coming soon!")
-db=sqlite3.connect('test.db')
-cursor=db.cursor()
+from dealer import request
+from calculator import calculate
 
-# Создание таблицы
-# cursor.execute("""CREATE TABLE tabletest(
-#     Type text,
-#     Source text,
-#     Income int
-# )"""
-# )
 
-# Заполнение данными
-# cursor.execute("INSERT INTO tabletest VALUES('Extra', 'from parents', 3000)")
+def main():
+    print("Hello User!")
 
-cursor.execute("SELECT rowid, * FROM tabletest WHERE Income > 20000")
-# print(cursor.fetchall())
+    while True:
+        command=request()
+        command_lowered=command.lower()
 
-items=cursor.fetchall()
-for el in items:
-    print(el[1]+"\n")
-    print(f"{el[3]}")
+        if "calculate" in command_lowered:
+            calculate()
 
-# print(cursor.fetchmany(2))
-# print(cursor.fetchone()[1])
+        elif "exit" in command_lowered:
+            print("Goodbye!!")
+            break
 
-# rowid он встроенный, не надо парится
-db.commit()
-db.close
+if __name__ == '__main__':
+    main()
