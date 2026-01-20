@@ -3,7 +3,7 @@ from calculator import calculate
 
 
 def main():
-    print("Hello User!")
+    print("Hello User! What we can help you?")
 
     while True:
         command=request()

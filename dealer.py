@@ -1,2 +1,3 @@
 def request():
-    command: int(input("What we can help you?"))
+    command= str(input("\n Enter your command: "))
+    return command

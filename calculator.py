@@ -3,3 +3,4 @@ def calculate():
     b=20
     s=a+b
     print(s)
+    return s
