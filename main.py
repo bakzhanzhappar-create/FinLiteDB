@@ -1,22 +1,31 @@
-from dealer import request
+from dealer import request, specify, Goodbye, wrong_value
 from calculator import calculate
-from reminder import
+from reminder import about_salary, about_calculate
 
 def main():
     print("Hello User! What we can help you?")
 
     while True:
-        command=request()
-        command_lowered=command.lower()
+        command=request().lower()
 
-        if "calculate" in command_lowered:
+        if "calculate" == command:
             calculate()
 
-        elif "exit" in command_lowered:
-            print("Goodbye!!")
+        elif "remind" in command:
+            defined = specify().lower()
+            if "about salary" in defined:
+                about_salary()
+
+            elif "about calculate" in defined:
+                about_calculate()
+
+            else:
+                wrong_value()
+
+        elif "exit" in command:
+            Goodbye()
             break
-        elif "reminder" in command_lowered:
-
-
+        else:
+            wrong_value()
 if __name__ == '__main__':
     main()
