@@ -1,6 +1,6 @@
 from dealer import request
 from calculator import calculate
-
+from reminder import
 
 def main():
     print("Hello User! What we can help you?")
@@ -15,6 +15,8 @@ def main():
         elif "exit" in command_lowered:
             print("Goodbye!!")
             break
+        elif "reminder" in command_lowered:
+
 
 if __name__ == '__main__':
     main()
