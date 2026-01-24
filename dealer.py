@@ -14,5 +14,10 @@ def specify():
     except ValueError:
         wrong_value()
         return False
+
 def Goodbye():
     print("\nGoodbye! :)")
+
+def not_enough_value():
+    print("Sorry, you don't have enough money")
+    print("\n BROKE NIGGA ALERT"*5)

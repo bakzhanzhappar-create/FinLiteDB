@@ -1,5 +1,5 @@
 from dealer import request, specify, Goodbye, wrong_value
-from calculator import calculate
+from calculator import calculate, test
 from reminder import about_salary, about_calculate
 
 def main():
@@ -9,7 +9,8 @@ def main():
         command=request().lower()
 
         if "calculate" == command:
-            calculate()
+            test()
+            # calculate()
 
         elif "remind" in command:
             defined = specify().lower()
