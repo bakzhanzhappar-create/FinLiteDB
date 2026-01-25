@@ -1,6 +1,5 @@
-from dealer import request, specify, Goodbye, wrong_value
+from dealer import request, specify, Goodbye, wrong_value, about_salary, about_calculate
 from calculator import calculate, test
-from reminder import about_salary, about_calculate
 
 def main():
     print("Hello User! What we can help you?")

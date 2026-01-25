@@ -20,20 +20,41 @@ def for_salary():
         wrong_value()
         return False
 
+# def test():
+#     try:
+#         test1=int(input("\n Type value of your salary: "))
+#         for_deposit=test1*0.15
+#         for_road=test1-for_deposit
+#         for_japan_trip=for_road-500
+#         for_myself=for_japan_trip
+#         if for_deposit <= 0 or for_road <= 0 or for_japan_trip <= 0 or for_myself <= 0:
+#             not_enough_value()
+#         else:
+#             print(f"\n Sum of deposit is {for_deposit}\n Sum of road is {for_road} \n Sum of myself is {for_myself}\n Sum of japan trip is {for_japan_trip}")
+#     except ValueError:
+#         wrong_value()
+#         return False
+
 def test():
     try:
-        test1=int(input("\n Type value of your salary: "))
-        for_deposit=test1*0.15
-        for_road=test1-for_deposit
-        for_japan_trip=for_road-500
-        for_myself=for_japan_trip
-        if not for_deposit or not for_road or not for_japan_trip or not for_myself > 0:
+        salary = int(input("\nType value of your salary: "))
+
+        for_deposit = salary * 0.15
+        for_road = salary - for_deposit
+        for_japan_trip = for_road - 500
+        for_myself = for_japan_trip
+
+        print(f"\n Sum of deposit is {for_deposit}\n Sum of road is {for_road} \n Sum of myself is {for_myself}\n Sum of japan trip is {for_japan_trip}")
+
+        if any(value < 0 for value in [
+            for_deposit,
+            for_road,
+            for_japan_trip,
+            for_myself
+        ]):
             not_enough_value()
-        else:
-            print(f"\n Sum of deposit is {for_deposit}\n Sum of road is {for_road} \n Sum of myself is {for_myself}\n Sum of japan trip is {for_japan_trip}")
 
     except ValueError:
         wrong_value()
-        return False
 
 
