@@ -40,21 +40,22 @@ def test():
         salary = int(input("\nType value of your salary: "))
 
         for_deposit = salary * 0.15
-        for_road = salary - for_deposit
-        for_japan_trip = for_road - 500
-        for_myself = for_japan_trip
+        for_road = 4950
+        for_japan_trip = 500
+        for_myself = salary - for_deposit - for_road - for_japan_trip
 
-        print(f"\n Sum of deposit is {for_deposit}\n Sum of road is {for_road} \n Sum of myself is {for_myself}\n Sum of japan trip is {for_japan_trip}")
+        print(
+            f"\nSum of deposit is {for_deposit}"
+            f"\nSum of road is {for_road}"
+            f"\nSum of japan trip is {for_japan_trip}"
+            f"\nSum of myself is {for_myself}"
+        )
 
-        if any(value < 0 for value in [
-            for_deposit,
-            for_road,
-            for_japan_trip,
-            for_myself
-        ]):
+        if for_myself < 0:
             not_enough_value()
 
     except ValueError:
         wrong_value()
+
 
 
