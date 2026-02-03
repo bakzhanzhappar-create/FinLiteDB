@@ -41,6 +41,4 @@ def test():
 
     except ValueError:
         wrong_value()
-
-
-
+        #прочти статью про JSON из заметки Obsidian
