@@ -41,4 +41,24 @@ def test():
 
     except ValueError:
         wrong_value()
+
+def test2():
+    try:
+        stipendya = int(input("\nType value of your salary: "))
+
+        for_deposit = stipendya * 0.15
+        tax = stipendya * 0.07
+        tax_for_niggas = stipendya * 0.02
+        for_myself = stipendya - for_deposit - tax - tax_for_niggas
+        print(
+            f"\nSum of deposit is {stipendya}"
+            f"\nSum of tax is {tax}"
+            f"\nSum of second tax is {tax_for_niggas}"
+            f"\nSum of myself is {for_myself}"
+        )
+
+        if for_myself < 0:
+            not_enough_value()
+    except ValueError:
+        wrong_value()
         #прочти статью про JSON из заметки Obsidian

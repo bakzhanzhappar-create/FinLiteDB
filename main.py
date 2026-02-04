@@ -1,5 +1,5 @@
-from dealer import request, specify, Goodbye, wrong_value, about_salary, about_calculate
-from calculator import calculate, test
+from dealer import request, specify, goodbye, wrong_value, about_salary, about_calculate
+from calculator import calculate, test, test2
 
 def main():
     print("Hello User! What we can help you?")
@@ -9,6 +9,7 @@ def main():
 
         if "calculate" == command:
             test()
+            test2()
             # calculate()
 
         elif "remind" in command:
@@ -23,7 +24,7 @@ def main():
                 wrong_value()
 
         elif "exit" in command:
-            Goodbye()
+            goodbye()
             break
         else:
             wrong_value()
