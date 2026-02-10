@@ -1,0 +1,2 @@
+def soon():
+    print("soon")

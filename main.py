@@ -1,5 +1,5 @@
 from dealer import request, specify, goodbye, wrong_value, about_salary, about_calculate
-from calculator import calculate, test, test2
+from calculator import test, test2
 
 def main():
     print("Hello User! What we can help you?")
@@ -10,7 +10,6 @@ def main():
         if "calculate" == command:
             test()
             test2()
-            # calculate()
 
         elif "remind" in command:
             defined = specify().lower()
