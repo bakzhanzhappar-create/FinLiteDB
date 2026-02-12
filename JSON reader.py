@@ -1,2 +1,3 @@
-def soon():
-    print("soon")
+#прописать JSON reader и append
+#добавить .gitignore (добавлен но просто воздуханю)
+#Заполни коспект по статьи json
