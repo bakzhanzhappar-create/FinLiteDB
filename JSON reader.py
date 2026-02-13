@@ -1,3 +1,4 @@
-#прописать JSON reader и append
-#добавить .gitignore (добавлен но просто воздуханю)
-#Заполни коспект по статьи json
+def verysoon23():
+    print("verysoon i think")
+def verysoon1():
+    print("verysoon i think")
