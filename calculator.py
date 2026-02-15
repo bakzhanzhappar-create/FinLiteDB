@@ -41,4 +41,7 @@ def test2():
             not_enough_value()
     except ValueError:
         wrong_value()
-        #прочти статью про JSON из заметки Obsidian
+
+
+
+# формула для процентных правил 4650=5000-(5000*7/100), если надо отнять 7% из 5000
