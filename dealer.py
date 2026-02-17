@@ -28,3 +28,7 @@ def about_salary():
 def about_calculate():
     print("\n Балду гоняю")
     print("\n Схитрил систему")
+
+#dealer
+def message_positive():
+    print("\n--- Success! ---\n")
