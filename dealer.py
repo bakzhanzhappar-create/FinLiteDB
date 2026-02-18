@@ -32,3 +32,7 @@ def about_calculate():
 #dealer
 def message_positive():
     print("\n--- Success! ---\n")
+
+#dealer
+def message_negative():
+    print("\nSomething went wrong\n")
