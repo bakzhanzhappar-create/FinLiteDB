@@ -1,47 +1,35 @@
-from dealer import wrong_value, not_enough_value
-
-def test():
+import json
+#calculator
+def calculate(summ):
     try:
-        salary = int(input("\nType value of your salary: "))
+        with open("template_storage.json", 'r', encoding='utf-8') as f:
+            template_dict = json.load(f)
 
-        for_deposit = salary * 0.15
-        for_road = 4950
-        for_japan_trip = 500
-        for_myself = salary - for_deposit - for_road - for_japan_trip
+        for names in template_dict.keys():
+            print(names)
 
-        print(
-            f"\nSum of deposit is {for_deposit}"
-            f"\nSum of road is {for_road}"
-            f"\nSum of japan trip is {for_japan_trip}"
-            f"\nSum of myself is {for_myself}"
-        )
+        name = str(input("\nEnter template name to apply: "))
 
-        if for_myself < 0:
-            not_enough_value()
+        if name in template_dict:
+            fix_val = template_dict[name][0][0]
+            per_val = template_dict[name][1][0]
 
-    except ValueError:
-        wrong_value()
+            print(f"Template found: Fix={fix_val}, Percent={per_val}%")
+            choice = input("Apply (f)ix or (p)ercent? ")
 
-def test2():
-    try:
-        stipendya = int(input("\nType value of your salary: "))
+            if choice == 'f':
+                result = summ - fix_val
+            else:
+                result = summ - (summ * per_val / 100)
+            return result
 
-        for_deposit = stipendya * 0.15
-        tax = stipendya * 0.07
-        tax_for_niggas = stipendya * 0.02
-        for_myself = stipendya - for_deposit - tax - tax_for_niggas
-        print(
-            f"\nSum of deposit is {stipendya}"
-            f"\nSum of tax is {tax}"
-            f"\nSum of second tax is {tax_for_niggas}"
-            f"\nSum of myself is {for_myself}"
-        )
+        else:
+            print(f"Template '{name}' not found!")
+            return None
 
-        if for_myself < 0:
-            not_enough_value()
-    except ValueError:
-        wrong_value()
-
-
-
-# формула для процентных правил 4650=5000-(5000*7/100), если надо отнять 7% из 5000
+    except FileNotFoundError:
+        print("File not found")
+        return None
+    except Exception as e:
+        print(f"Error: {e}")
+        return None

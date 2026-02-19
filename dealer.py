@@ -1,38 +1,80 @@
-def request():
-    command= str(input("\n Type your command: <calculate> to calculate you somethings, <remind> to remind instructions, <exit> to exit :) "))
-    return command
 
+# storage
+template_name_variable=list()
+fix_number_list=list()
+fix_description_list=list()
+percent_number_list=list()
+percent_description_list=list()
 
-def wrong_value():
-    print("I think you made some mistake with type of input")
-
-
-def specify():
+def hello():
     try:
-        specify_input: str=str(input(f"What exactly you want to know about?? In current moment we have information for <about salary>, <about calculate> "))
-        return specify_input
+        deal=str(input(" <<add>> add new template \n <<convert>> to convert into JSON storage\n <<read>> to show what is written in JSON storage \n <<exit>> to finish programme \n"))
+        return deal
     except ValueError:
-        wrong_value()
-        return False
+        print("Something went wrong")
+        return None
 
-def goodbye():
-    print("\nGoodbye! :)")
-
-def not_enough_value():
-    print("Sorry, you don't have enough money")
-    print("\n BROKE NIGGA ALERT"*5)
-
-def about_salary():
-    print("\nIn current moment <for salary> is meant to calculate your input under specified rules: Just taking from inputs 7%")
-
-def about_calculate():
-    print("\n Балду гоняю")
-    print("\n Схитрил систему")
-
-#dealer
 def message_positive():
     print("\n--- Success! ---\n")
 
-#dealer
 def message_negative():
     print("\nSomething went wrong\n")
+
+def template_name():
+    try:
+        template_name_variable=str(input("Enter template name: "))
+        return template_name_variable
+    except ValueError:
+        message_negative()
+        return None
+
+def fix():
+    try:
+        fix_number_list=int(input("Enter how much u need to write off from amount: "))
+        return fix_number_list
+    except ValueError:
+        message_negative()
+        print("Use only whole number!")
+        return fix()
+
+def fix_description():
+    try:
+        fix_description_list=str(input("Enter a description for the fix: "))
+        return fix_description_list
+    except ValueError:
+        message_negative()
+        return None
+
+def percentage():
+    try:
+        percent_number_list=int(input("Enter how much u need to write off from amount by percentage: "))
+        return percent_number_list
+    except ValueError:
+        message_negative()
+        print("Use only whole number!")
+        return percentage()
+
+def percentage_description():
+    try:
+        percentage_description_list=str(input("Enter a description for the percentage: "))
+        return percentage_description_list
+    except ValueError:
+        message_negative()
+        return None
+
+def full_list_append():
+    try:
+        template_name_variable.append(template_name())
+        while True:
+            ask = str(input("What do you wish to start input?\n(f/p)\nIf u sure for results write <<b>>: "))
+            if ask=='p':
+                percent_number_list.append(percentage())
+                percent_description_list.append(percentage_description())
+            if ask=='f':
+                fix_number_list.append(fix())
+                fix_description_list.append(fix_description())
+            elif ask=='b':
+                break
+    except ValueError:
+            message_negative()
+            return None
