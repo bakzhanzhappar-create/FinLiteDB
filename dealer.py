@@ -1,5 +1,4 @@
 
-# storage
 template_name_variable=list()
 fix_number_list=list()
 fix_description_list=list()
