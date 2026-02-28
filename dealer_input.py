@@ -50,3 +50,27 @@ def full_list_save(username):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(db, f, indent=4, ensure_ascii=False)
     print(f"--- Шаблон '{name}' успешно сохранен ---")
+
+
+def save_template(username, name, rules):
+    """
+    Сохранение шаблона: один список правил в порядке добавления (FIFO).
+    rules: [{"type": "f"|"p", "val": число, "desc": строка}, ...]
+    """
+    filename = f"{username}.json"
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+    except Exception:
+        db = {}
+
+    if name in db:
+        return False, f"Шаблон '{name}' уже существует."
+
+    if not rules:
+        return False, "Пустой шаблон не сохранен."
+
+    db[name] = list(rules)
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(db, f, indent=4, ensure_ascii=False)
+    return True, None

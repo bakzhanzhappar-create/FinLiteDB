@@ -16,37 +16,49 @@ class PiggyBank:
         with open(self.filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
-    def create_goal(self):
-        name = input("На что копим? (имя цели): ").strip()
-        target = float(input("Целевая сумма: "))
-        link = input("Ссылка на товар/описание: ")
+    def create_goal(self, name=None, target=None, link=None):
+        if name is None:
+            name = input("На что копим? (имя цели): ").strip()
+        if target is None:
+            target = float(input("Целевая сумма: "))
+        if link is None:
+            link = input("Ссылка на товар/описание: ")
 
         data = self._read()
-        if "piggybanks" not in data: data["piggybanks"] = {}
+        if "piggybanks" not in data:
+            data["piggybanks"] = {}
 
         data["piggybanks"][name] = {
-            "target": target,
+            "target": float(target),
             "current": 0.0,
-            "link": link
+            "link": link or ""
         }
         self._write(data)
+        if name is not None and target is not None:
+            return
         print(f"Копилка '{name}' активирована!")
 
-    def deposit(self, amount):
+    def deposit(self, amount, goal_name=None):
         data = self._read()
         banks = data.get("piggybanks", {})
 
         if not banks:
+            if goal_name is not None:
+                return False
             print("У вас нет активных копилок.")
             return
 
-        print("Ваши цели:", list(banks.keys()))
-        choice = input("В какую копилку закинуть остаток?: ")
+        if goal_name is not None:
+            choice = goal_name
+        else:
+            print("Ваши цели:", list(banks.keys()))
+            choice = input("В какую копилку закинуть остаток?: ")
 
         if choice in banks:
-            banks[choice]["current"] += amount
+            banks[choice]["current"] += float(amount)
             self._write(data)
-            prog = (banks[choice]['current'] / banks[choice]['target']) * 100
-            print(f"Зачислили {amount}. Прогресс '{choice}': {round(prog, 1)}%")
-        else:
-            print("Копилка не найдена.")
+            if goal_name is None:
+                prog = (banks[choice]['current'] / banks[choice]['target']) * 100
+                print(f"Зачислили {amount}. Прогресс '{choice}': {round(prog, 1)}%")
+            return True
+        return False
