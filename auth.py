@@ -1,3 +1,7 @@
+#обязанности у этого модуля:
+#бъединить с auth.py, app.py, dealer_input
+#Строго IO и веб интерфейс функционал
+
 import json
 
 def authenticate():

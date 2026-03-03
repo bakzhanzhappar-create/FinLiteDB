@@ -1,3 +1,6 @@
+#обязанности у этого модуля:
+#Его роль это вызыв модулей исходя из значений условий
+
 import auth, logic, storage, reader, dealer_input as di
 
 def start_session():

@@ -1,3 +1,8 @@
+#обязанности у этого модуля:
+#бъединить с auth.py, app.py, dealer_input
+#Строго IO и веб интерфейс функционал
+
+
 # -*- coding: utf-8 -*-
 """
 Streamlit-интерфейс FinLiteDB.
