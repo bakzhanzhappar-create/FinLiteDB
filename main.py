@@ -23,13 +23,15 @@ def start_session():
             # Вывод копилок
             data = bank._read()
             if "piggybanks" in data and data["piggybanks"]:
+#presentation.py
                 print("\n ВАШИ КОПИЛКИ:")
                 for n, i in data["piggybanks"].items():
                     prog = (i['current'] / i['target']) * 100
                     print(f"[{n}] {i['current']}/{i['target']} ({round(prog, 1)}%) | {i['link']}")
-
+#--------------------------------------------------------------
         if "interact" in action:
             try:
+#core.py
                 sum_val = float(input("\nВведите сумму дохода: "))
                 remains = logic.run_fifo(sum_val, user)
                 if remains > 0:
@@ -37,6 +39,7 @@ def start_session():
                         bank.deposit(remains)
             except ValueError:
                 print("Введите число!")
+# --------------------------------------------------------------
 
         if "exit" in action:
             print(f"Сессия {user} закрыта.")
