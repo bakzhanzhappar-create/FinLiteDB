@@ -1,13 +1,149 @@
+#Залить коды
 #обязанности у этого модуля:
 #создание шаблонов (фикс и проц а также их описание) и класса копилки
 #грубо говоря он еще и калькулятор по этим же шаблонам и копилкам
 #валидирует значения во всех этапах операции (например юзер не может в проц записать значение выше 100% или ниже 0%
 #впринципе пока все
-#To core.py
 
 import json
 
+#класс копилки. создает копилку и там же имеет функцию переноса остатка в копилку.
+#FROM storage.py
+class PiggyBank:
+    def __init__(self, username):
+        self.filename = f"{username}.json"
 
+    def _read(self):
+        try:
+            with open(self.filename, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return {"piggybanks": {}}
+
+    def _write(self, data):
+        with open(self.filename, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+
+    def create_goal(self, name=None, target=None, link=None):
+        if name is None:
+            name = input("На что копим? (имя цели): ").strip()
+        if target is None:
+            target = float(input("Целевая сумма: "))
+        if link is None:
+            link = input("Ссылка на товар/описание: ")
+
+        data = self._read()
+        if "piggybanks" not in data:
+            data["piggybanks"] = {}
+
+        data["piggybanks"][name] = {
+            "target": float(target),
+            "current": 0.0,
+            "link": link or ""
+        }
+        self._write(data)
+        if name is not None and target is not None:
+            return
+        print(f"Копилка '{name}' активирована!")
+
+    def deposit(self, amount, goal_name=None):
+        data = self._read()
+        banks = data.get("piggybanks", {})
+
+        if not banks:
+            if goal_name is not None:
+                return False
+            print("У вас нет активных копилок.")
+            return
+
+        if goal_name is not None:
+            choice = goal_name
+        else:
+            print("Ваши цели:", list(banks.keys()))
+            choice = input("В какую копилку закинуть остаток?: ")
+
+        if choice in banks:
+            banks[choice]["current"] += float(amount)
+            self._write(data)
+            if goal_name is None:
+                prog = (banks[choice]['current'] / banks[choice]['target']) * 100
+                print(f"Зачислили {amount}. Прогресс '{choice}': {round(prog, 1)}%")
+            return True
+        return False
+# --------------------------------------------------------------
+
+# FROM dealer_input
+def full_list_save(username):
+    """Сбор данных и моментальная запись в JSON пользователя"""
+    name = input("Введите имя нового шаблона: ").strip()
+    filename = f"{username}.json"
+
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+    except:
+        db = {}
+
+    if name in db:
+        print(f"!!! Ошибка: Шаблон '{name}' уже существует в вашей базе.")
+        return
+
+    fixes, percs = [], []
+    while True:
+        ask = input(f"[{name}] Добавить (f)икс, (p)роцент или (s)охранить всё?: ").lower()
+        if ask == 'f':
+            val = int(input("Сумма вычета: "))
+            desc = input("Описание фикса: ")
+            fixes.append([val, desc])
+        elif ask == 'p':
+            val = int(input("Процент (0-100): "))
+            if val > 100: val = 100
+            desc = input("Описание процента: ")
+            percs.append([val, desc])
+        elif ask == 's':
+            break
+
+    # Валидатор "воздуха": выравниваем списки до одинаковой длины
+    max_len = max(len(fixes), len(percs))
+    if max_len == 0:
+        print("Пустой шаблон не сохранен.")
+        return
+
+    while len(fixes) < max_len: fixes.append([0, "пусто"])
+    while len(percs) < max_len: percs.append([0, "пусто"])
+
+#Запись данных  в json.
+    # Заливаем в базу
+    db[name] = [fixes, percs]
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(db, f, indent=4, ensure_ascii=False)
+    print(f"--- Шаблон '{name}' успешно сохранен ---")
+# --------------------------------------------------------------
+
+def save_template(username, name, rules):
+    """
+    Сохранение шаблона: один список правил в порядке добавления (FIFO).
+    rules: [{"type": "f"|"p", "val": число, "desc": строка}, ...]
+    """
+    filename = f"{username}.json"
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+    except Exception:
+        db = {}
+
+    if name in db:
+        return False, f"Шаблон '{name}' уже существует."
+
+    if not rules:
+        return False, "Пустой шаблон не сохранен."
+
+    db[name] = list(rules)
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(db, f, indent=4, ensure_ascii=False)
+    return True, None
+
+#FROM logic.py
 def run_fifo(amount, username, template_name=None):
     """
     Если template_name передан — использует его и возвращает (current_balance, history, fail_idx).

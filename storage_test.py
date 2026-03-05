@@ -1,10 +1,9 @@
 #обязанности у этого модуля:
-#Объединить с auth.py, app.py, dealer_input, reader.py в presentation.py
-#Строго IO и веб интерфейс функционал
-#To storage_test.py
+#Чтение и запись json-а
+
 import json
 
-#Чтение и десериализация из JSON файла. Почти такой же но чуть различается.
+#Чтение и десериализация из JSON файла. Почти такой же но чуть различается. From reader.py
 def show_database(username):
     filename = f"{username}.json"
     try:

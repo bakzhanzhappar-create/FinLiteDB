@@ -1,7 +1,88 @@
 #обязанности у этого модуля:
 #Объединить с auth.py, app.py, dealer_input, reader.py в presentation.py
 #Строго IO и веб интерфейс функционал
-#Presentation.py
+
+#из auth.py
+
+def authenticate():
+    print("\n=== ВХОД В СИСТЕМУ ===")
+    user = input("Введите ваш логин: ").strip().lower()
+    if not user: user = "guest"
+    filename = f"{user}.json"
+
+    try:
+        # Пробуем открыть файл пользователя
+        with open(filename, 'r', encoding='utf-8') as f:
+            json.load(f)
+        print(f"С возвращением, {user}!")
+    except (FileNotFoundError, json.JSONDecodeError):
+        # Если файла нет — создаем новый с базовой структурой
+        choice = input(f"Профиль '{user}' не найден. Создать новый? (y/n): ").lower()
+        if choice == 'y':
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump({"piggybanks": {}}, f, indent=4)
+            print(f"Создана личная база: {filename}")
+        else:
+            return None
+    return user
+#--------------------------------------------------------------
+
+#FROM dealer_input.py
+def hello():
+    return input(
+        "\n <<add>> создать шаблон \n <<read>> база данных \n <<interact>> расчет FIFO \n <<bank>> создать копилку \n <<exit>> выход \n").lower()
+# --------------------------------------------------------------
+
+def save_template(username, name, rules):
+    """
+    Сохранение шаблона: один список правил в порядке добавления (FIFO).
+    rules: [{"type": "f"|"p", "val": число, "desc": строка}, ...]
+    """
+    filename = f"{username}.json"
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+    except Exception:
+        db = {}
+
+    if name in db:
+        return False, f"Шаблон '{name}' уже существует."
+
+    if not rules:
+        return False, "Пустой шаблон не сохранен."
+
+    db[name] = list(rules)
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(db, f, indent=4, ensure_ascii=False)
+    return True, None
+#--------------------------------------------------------------
+
+#из reader.py
+#Чтение и десериализация из JSON файла. Почти такой же но чуть различается.
+def show_database(username):
+    filename = f"{username}.json"
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+    except:
+        print("База пуста.")
+        return
+# --------------------------------------------------------------
+
+    print(f"\n--- БАЗА ПОЛЬЗОВАТЕЛЯ: {username} ---")
+    templates = {k: v for k, v in db.items() if k != "piggybanks"}
+
+    if not templates:
+        print("Шаблонов пока нет.")
+    else:
+        for name, rules in templates.items():
+            f_list, p_list = rules
+            act_f = len([x for x in f_list if x[0] > 0])
+            act_p = len([x for x in p_list if x[0] > 0])
+            print(f"\n Шаблон: {name} (фиксов:{act_f}, проц:{act_p})")
+            for i in range(len(f_list)):
+                if f_list[i][0] > 0: print(f"  - Фикс: {f_list[i][0]} ({f_list[i][1]})")
+                if p_list[i][0] > 0: print(f"  - Проц: {p_list[i][0]}% ({p_list[i][1]})")
 
 # -*- coding: utf-8 -*-
 """
@@ -14,7 +95,7 @@ import logic
 import storage
 import dealer_input
 
-#ЕГО НЕ ЧИТАЛ. ПО ЛЮБОМУ РАЗОБРАТЬ.
+#From app.py
 def get_user_db(username):
     """Читает JSON пользователя. Возвращает dict или None."""
     filename = f"{username}.json"

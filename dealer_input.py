@@ -1,15 +1,15 @@
 #обязанности у этого модуля:
-#бъединить с auth.py, app.py, dealer_input
+#Объединить с auth.py, app.py, dealer_input, reader.py в presentation.py
 #Строго IO и веб интерфейс функционал
 
 import json
 
-
+#To presentation.py
 def hello():
     return input(
         "\n <<add>> создать шаблон \n <<read>> база данных \n <<interact>> расчет FIFO \n <<bank>> создать копилку \n <<exit>> выход \n").lower()
 
-
+#To logic.py
 def full_list_save(username):
     """Сбор данных и моментальная запись в JSON пользователя"""
     name = input("Введите имя нового шаблона: ").strip()
@@ -49,12 +49,13 @@ def full_list_save(username):
     while len(fixes) < max_len: fixes.append([0, "пусто"])
     while len(percs) < max_len: percs.append([0, "пусто"])
 
+#Запись данных  в json.
     # Заливаем в базу
     db[name] = [fixes, percs]
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(db, f, indent=4, ensure_ascii=False)
     print(f"--- Шаблон '{name}' успешно сохранен ---")
-
+# --------------------------------------------------------------
 
 def save_template(username, name, rules):
     """

@@ -33,7 +33,7 @@ def start_session():
             try:
 #core.py
                 sum_val = float(input("\nВведите сумму дохода: "))
-                remains = logic.run_fifo(sum_val, user)
+                remains = l1ogic.run_fifo(sum_val, user)
                 if remains > 0:
                     if input("Закинуть остаток в копилку? (y/n): ").lower() == 'y':
                         bank.deposit(remains)

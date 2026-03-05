@@ -1,5 +1,5 @@
 #обязанности у этого модуля:
-#бъединить с auth.py, app.py, dealer_input
+#To presentation.py
 #Строго IO и веб интерфейс функционал
 
 import json

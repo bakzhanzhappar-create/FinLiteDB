@@ -1,9 +1,9 @@
 #обязанности у этого модуля:
-#Чтение и запись json-а
+#Создание класса копилок
 
 import json
 
-
+#класс копилки. создает копилку и там же имеет функцию переноса остатка в копилку. To core.py
 class PiggyBank:
     def __init__(self, username):
         self.filename = f"{username}.json"
@@ -65,3 +65,4 @@ class PiggyBank:
                 print(f"Зачислили {amount}. Прогресс '{choice}': {round(prog, 1)}%")
             return True
         return False
+# --------------------------------------------------------------
