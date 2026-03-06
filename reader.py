@@ -1,10 +1,9 @@
 #обязанности у этого модуля:
-#Объединить с auth.py, app.py, dealer_input, reader.py в presentation.py
 #Строго IO и веб интерфейс функционал
 #To storage_test.py
 import json
 
-#Чтение и десериализация из JSON файла. Почти такой же но чуть различается.
+#Чтение и десериализация из JSON файла. Почти такой же но чуть различается. To storage_test.py from reader.py
 def show_database(username):
     filename = f"{username}.json"
     try:
@@ -13,7 +12,6 @@ def show_database(username):
     except:
         print("База пуста.")
         return
-# --------------------------------------------------------------
 
     print(f"\n--- БАЗА ПОЛЬЗОВАТЕЛЯ: {username} ---")
     templates = {k: v for k, v in db.items() if k != "piggybanks"}
@@ -29,3 +27,4 @@ def show_database(username):
             for i in range(len(f_list)):
                 if f_list[i][0] > 0: print(f"  - Фикс: {f_list[i][0]} ({f_list[i][1]})")
                 if p_list[i][0] > 0: print(f"  - Проц: {p_list[i][0]}% ({p_list[i][1]})")
+# --------------------------------------------------------------

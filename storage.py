@@ -3,7 +3,8 @@
 
 import json
 
-#класс копилки. создает копилку и там же имеет функцию переноса остатка в копилку. To core.py
+#класс копилки. создает копилку и там же имеет функцию переноса остатка в копилку.
+# To core.py from storage.py
 class PiggyBank:
     def __init__(self, username):
         self.filename = f"{username}.json"

@@ -1,6 +1,6 @@
 #обязанности у этого модуля:
-#To presentation.py
 #Строго IO и веб интерфейс функционал
+#To presentation.py from auth.py
 
 import json
 

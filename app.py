@@ -14,7 +14,7 @@ import logic
 import storage
 import dealer_input
 
-#ЕГО НЕ ЧИТАЛ. ПО ЛЮБОМУ РАЗОБРАТЬ.
+#чтение. To storage_test.py
 def get_user_db(username):
     """Читает JSON пользователя. Возвращает dict или None."""
     filename = f"{username}.json"
@@ -24,15 +24,18 @@ def get_user_db(username):
     except (FileNotFoundError, json.JSONDecodeError):
         return None
 
-
+#To core.py
+#получаем словарь без копилки
 def get_templates(username):
     """Список имён шаблонов (без piggybanks)."""
     db = get_user_db(username)
     if not db:
         return []
+#проверка в одну строку ищем не является ли k "piggybanks"
     return [k for k in db.keys() if k != "piggybanks"]
 
-
+#To core.py from app.py
+#получаем список копилок по ключу функции get()
 def get_piggybanks(username):
     """Словарь копилок пользователя."""
     db = get_user_db(username)
@@ -40,7 +43,7 @@ def get_piggybanks(username):
         return {}
     return db.get("piggybanks", {})
 
-
+#запись. To storage_test.py from app.py
 def create_profile(username):
     """Создаёт файл профиля с базовой структурой."""
     filename = f"{username}.json"
@@ -48,14 +51,14 @@ def create_profile(username):
         json.dump({"piggybanks": {}}, f, indent=4)
     return True
 
-
+#запись. To storage_test.py from app.py
 def write_user_db(username, data):
     """Записывает данные в JSON пользователя."""
     filename = f"{username}.json"
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-
+#To core.py from app.py
 def delete_template(username, template_name):
     """Удаляет шаблон по имени. Возвращает True при успехе."""
     db = get_user_db(username)
@@ -65,7 +68,7 @@ def delete_template(username, template_name):
     write_user_db(username, db)
     return True
 
-
+#To core.py from app.py
 def delete_piggybank(username, goal_name):
     """Удаляет копилку по имени. Возвращает True при успехе."""
     db = get_user_db(username)
@@ -77,7 +80,7 @@ def delete_piggybank(username, goal_name):
     write_user_db(username, db)
     return True
 
-
+#To presentation.py from app.py
 # --- Session state ---
 if "user" not in st.session_state:
     st.session_state.user = None
@@ -125,6 +128,7 @@ with tab_fifo:
         amount = st.number_input("Сумма", min_value=0.0, value=0.0, step=10.0, key="fifo_amount")
         template_name = st.selectbox("Шаблон", options=templates, key="fifo_template")
         if st.button("Рассчитать", key="btn_fifo"):
+#Здесь вызывают run_fifo  из logic.py
             balance, history, fail_idx = logic.run_fifo(amount, username, template_name=template_name)
             for line in history:
                 st.write(line)
@@ -175,12 +179,14 @@ with tab_templates:
     st.write("Правила в порядке добавления (FIFO): сначала добавил — сначала применяется.")
     col1, col2 = st.columns(2)
     with col1:
+#Переменные фикс
         fix_val = st.number_input("Фикс — сумма", min_value=0, value=0, key="fix_val")
         fix_desc = st.text_input("Фикс — описание", key="fix_desc")
         if st.button("Добавить фикс", key="add_fix"):
             st.session_state._rules.append({"type": "f", "val": fix_val, "desc": fix_desc or "пусто"})
             st.rerun()
     with col2:
+# Переменные проц
         perc_val = st.number_input("Процент (0–100)", min_value=0, max_value=100, value=0, key="perc_val")
         perc_desc = st.text_input("Процент — описание", key="perc_desc")
         if st.button("Добавить процент", key="add_perc"):
@@ -188,6 +194,7 @@ with tab_templates:
             st.rerun()
 
     st.write("Порядок правил (как добавляли):")
+#Цикл где отображают записанные переменые
     for i, r in enumerate(st.session_state._rules):
         if r.get("type") == "f":
             st.caption(f"{i+1}. Фикс: {r.get('val', 0)} — {r.get('desc', '')}")
@@ -213,7 +220,7 @@ with tab_piggy:
     st.subheader("Копилка")
     banks = get_piggybanks(username)
     if not banks:
-        st.write("Копилок пока нет. Создайте цель ниже.")
+        st.write("Копилок пока нет. Создайте ее ниже.")
     else:
         for goal_name, data in banks.items():
             target = data.get("target", 1)
@@ -226,7 +233,7 @@ with tab_piggy:
                 st.caption(link)
         st.divider()
 
-    # Закинуть остаток из FIFO
+    # Перевести остаток из FIFO в копилку
     remains = st.session_state.get("fifo_remains")
     if remains is not None and remains > 0 and banks:
         st.write("Остаток после расчёта FIFO можно закинуть в копилку:")

@@ -3,7 +3,24 @@
 
 import json
 
-#Чтение и десериализация из JSON файла. Почти такой же но чуть различается. From reader.py
+#чтение. To storage_test.py from app.py
+def get_user_db(username):
+    """Читает JSON пользователя. Возвращает dict или None."""
+    filename = f"{username}.json"
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+#запись. To storage_test.py from app.py
+def write_user_db(username, data):
+    """Записывает данные в JSON пользователя."""
+    filename = f"{username}.json"
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+#Чтение и десериализация из JSON файла. Почти такой же но чуть различается. To storage_test.py from reader.py
 def show_database(username):
     filename = f"{username}.json"
     try:
@@ -12,7 +29,6 @@ def show_database(username):
     except:
         print("База пуста.")
         return
-# --------------------------------------------------------------
 
     print(f"\n--- БАЗА ПОЛЬЗОВАТЕЛЯ: {username} ---")
     templates = {k: v for k, v in db.items() if k != "piggybanks"}
@@ -28,3 +44,28 @@ def show_database(username):
             for i in range(len(f_list)):
                 if f_list[i][0] > 0: print(f"  - Фикс: {f_list[i][0]} ({f_list[i][1]})")
                 if p_list[i][0] > 0: print(f"  - Проц: {p_list[i][0]}% ({p_list[i][1]})")
+# --------------------------------------------------------------
+
+#To storage_test from dealer_input
+def save_template(username, name, rules):
+    """
+    Сохранение шаблона: один список правил в порядке добавления (FIFO).
+    rules: [{"type": "f"|"p", "val": число, "desc": строка}, ...]
+    """
+    filename = f"{username}.json"
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+    except Exception:
+        db = {}
+
+    if name in db:
+        return False, f"Шаблон '{name}' уже существует."
+
+    if not rules:
+        return False, "Пустой шаблон не сохранен."
+
+    db[name] = list(rules)
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(db, f, indent=4, ensure_ascii=False)
+    return True, None

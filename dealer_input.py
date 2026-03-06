@@ -4,12 +4,12 @@
 
 import json
 
-#To presentation.py
+#To presentation.py from dealer_input.py
 def hello():
     return input(
         "\n <<add>> создать шаблон \n <<read>> база данных \n <<interact>> расчет FIFO \n <<bank>> создать копилку \n <<exit>> выход \n").lower()
 
-#To logic.py
+#To core.py from dealer_input. Optimize and divide to modules
 def full_list_save(username):
     """Сбор данных и моментальная запись в JSON пользователя"""
     name = input("Введите имя нового шаблона: ").strip()
@@ -57,6 +57,7 @@ def full_list_save(username):
     print(f"--- Шаблон '{name}' успешно сохранен ---")
 # --------------------------------------------------------------
 
+#To storage_test from dealer_input
 def save_template(username, name, rules):
     """
     Сохранение шаблона: один список правил в порядке добавления (FIFO).

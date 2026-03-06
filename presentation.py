@@ -1,8 +1,13 @@
 #обязанности у этого модуля:
-#Объединить с auth.py, app.py, dealer_input, reader.py в presentation.py
 #Строго IO и веб интерфейс функционал
+#To presentation.py from auth.py
 
-#из auth.py
+import json
+import streamlit as st
+import logic
+import storage
+import dealer_input
+
 
 def authenticate():
     print("\n=== ВХОД В СИСТЕМУ ===")
@@ -25,140 +30,14 @@ def authenticate():
         else:
             return None
     return user
-#--------------------------------------------------------------
 
-#FROM dealer_input.py
+#To presentation.py from dealer_input.py
 def hello():
     return input(
         "\n <<add>> создать шаблон \n <<read>> база данных \n <<interact>> расчет FIFO \n <<bank>> создать копилку \n <<exit>> выход \n").lower()
-# --------------------------------------------------------------
-
-def save_template(username, name, rules):
-    """
-    Сохранение шаблона: один список правил в порядке добавления (FIFO).
-    rules: [{"type": "f"|"p", "val": число, "desc": строка}, ...]
-    """
-    filename = f"{username}.json"
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            db = json.load(f)
-    except Exception:
-        db = {}
-
-    if name in db:
-        return False, f"Шаблон '{name}' уже существует."
-
-    if not rules:
-        return False, "Пустой шаблон не сохранен."
-
-    db[name] = list(rules)
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(db, f, indent=4, ensure_ascii=False)
-    return True, None
-#--------------------------------------------------------------
-
-#из reader.py
-#Чтение и десериализация из JSON файла. Почти такой же но чуть различается.
-def show_database(username):
-    filename = f"{username}.json"
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            db = json.load(f)
-    except:
-        print("База пуста.")
-        return
-# --------------------------------------------------------------
-
-    print(f"\n--- БАЗА ПОЛЬЗОВАТЕЛЯ: {username} ---")
-    templates = {k: v for k, v in db.items() if k != "piggybanks"}
-
-    if not templates:
-        print("Шаблонов пока нет.")
-    else:
-        for name, rules in templates.items():
-            f_list, p_list = rules
-            act_f = len([x for x in f_list if x[0] > 0])
-            act_p = len([x for x in p_list if x[0] > 0])
-            print(f"\n Шаблон: {name} (фиксов:{act_f}, проц:{act_p})")
-            for i in range(len(f_list)):
-                if f_list[i][0] > 0: print(f"  - Фикс: {f_list[i][0]} ({f_list[i][1]})")
-                if p_list[i][0] > 0: print(f"  - Проц: {p_list[i][0]}% ({p_list[i][1]})")
-
-# -*- coding: utf-8 -*-
-"""
-Streamlit-интерфейс FinLiteDB.
-Бэкенд: auth.py, logic.py, storage.py, dealer_input.py, reader (логика).
-"""
-import json
-import streamlit as st
-import logic
-import storage
-import dealer_input
-
-#From app.py
-def get_user_db(username):
-    """Читает JSON пользователя. Возвращает dict или None."""
-    filename = f"{username}.json"
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return None
 
 
-def get_templates(username):
-    """Список имён шаблонов (без piggybanks)."""
-    db = get_user_db(username)
-    if not db:
-        return []
-    return [k for k in db.keys() if k != "piggybanks"]
-
-
-def get_piggybanks(username):
-    """Словарь копилок пользователя."""
-    db = get_user_db(username)
-    if not db:
-        return {}
-    return db.get("piggybanks", {})
-
-
-def create_profile(username):
-    """Создаёт файл профиля с базовой структурой."""
-    filename = f"{username}.json"
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump({"piggybanks": {}}, f, indent=4)
-    return True
-
-
-def write_user_db(username, data):
-    """Записывает данные в JSON пользователя."""
-    filename = f"{username}.json"
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-
-def delete_template(username, template_name):
-    """Удаляет шаблон по имени. Возвращает True при успехе."""
-    db = get_user_db(username)
-    if not db or template_name not in db or template_name == "piggybanks":
-        return False
-    del db[template_name]
-    write_user_db(username, db)
-    return True
-
-
-def delete_piggybank(username, goal_name):
-    """Удаляет копилку по имени. Возвращает True при успехе."""
-    db = get_user_db(username)
-    if not db: return False
-    pigs = db.get("piggybanks", {})
-    if goal_name not in pigs: return False
-    del pigs[goal_name]
-    db["piggybanks"] = pigs
-    write_user_db(username, db)
-    return True
-
-
+#To presentation.py from app.py. Optimize and divide to modules
 # --- Session state ---
 if "user" not in st.session_state:
     st.session_state.user = None
@@ -206,6 +85,7 @@ with tab_fifo:
         amount = st.number_input("Сумма", min_value=0.0, value=0.0, step=10.0, key="fifo_amount")
         template_name = st.selectbox("Шаблон", options=templates, key="fifo_template")
         if st.button("Рассчитать", key="btn_fifo"):
+#Здесь вызывают run_fifo  из logic.py
             balance, history, fail_idx = logic.run_fifo(amount, username, template_name=template_name)
             for line in history:
                 st.write(line)
@@ -256,12 +136,14 @@ with tab_templates:
     st.write("Правила в порядке добавления (FIFO): сначала добавил — сначала применяется.")
     col1, col2 = st.columns(2)
     with col1:
+#Переменные фикс
         fix_val = st.number_input("Фикс — сумма", min_value=0, value=0, key="fix_val")
         fix_desc = st.text_input("Фикс — описание", key="fix_desc")
         if st.button("Добавить фикс", key="add_fix"):
             st.session_state._rules.append({"type": "f", "val": fix_val, "desc": fix_desc or "пусто"})
             st.rerun()
     with col2:
+# Переменные проц
         perc_val = st.number_input("Процент (0–100)", min_value=0, max_value=100, value=0, key="perc_val")
         perc_desc = st.text_input("Процент — описание", key="perc_desc")
         if st.button("Добавить процент", key="add_perc"):
@@ -269,6 +151,7 @@ with tab_templates:
             st.rerun()
 
     st.write("Порядок правил (как добавляли):")
+#Цикл где отображают записанные переменые
     for i, r in enumerate(st.session_state._rules):
         if r.get("type") == "f":
             st.caption(f"{i+1}. Фикс: {r.get('val', 0)} — {r.get('desc', '')}")
@@ -294,7 +177,7 @@ with tab_piggy:
     st.subheader("Копилка")
     banks = get_piggybanks(username)
     if not banks:
-        st.write("Копилок пока нет. Создайте цель ниже.")
+        st.write("Копилок пока нет. Создайте ее ниже.")
     else:
         for goal_name, data in banks.items():
             target = data.get("target", 1)
@@ -307,7 +190,7 @@ with tab_piggy:
                 st.caption(link)
         st.divider()
 
-    # Закинуть остаток из FIFO
+    # Перевести остаток из FIFO в копилку
     remains = st.session_state.get("fifo_remains")
     if remains is not None and remains > 0 and banks:
         st.write("Остаток после расчёта FIFO можно закинуть в копилку:")

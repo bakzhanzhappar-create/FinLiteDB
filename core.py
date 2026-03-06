@@ -5,10 +5,49 @@
 #валидирует значения во всех этапах операции (например юзер не может в проц записать значение выше 100% или ниже 0%
 #впринципе пока все
 
-import json
+#To core.py from app.py
+#получаем словарь без копилки
+def get_templates(username):
+    """Список имён шаблонов (без piggybanks)."""
+    db = get_user_db(username)
+    if not db:
+        return []
+#проверка в одну строку ищем не является ли k "piggybanks"
+    return [k for k in db.keys() if k != "piggybanks"]
+
+#To core.py from app.py
+#получаем список копилок по ключу функции get()
+def get_piggybanks(username):
+    """Словарь копилок пользователя."""
+    db = get_user_db(username)
+    if not db:
+        return {}
+    return db.get("piggybanks", {})
+
+#To core.py from app.py
+def delete_template(username, template_name):
+    """Удаляет шаблон по имени. Возвращает True при успехе."""
+    db = get_user_db(username)
+    if not db or template_name not in db or template_name == "piggybanks":
+        return False
+    del db[template_name]
+    write_user_db(username, db)
+    return True
+
+#To core.py from app.py
+def delete_piggybank(username, goal_name):
+    """Удаляет копилку по имени. Возвращает True при успехе."""
+    db = get_user_db(username)
+    if not db: return False
+    pigs = db.get("piggybanks", {})
+    if goal_name not in pigs: return False
+    del pigs[goal_name]
+    db["piggybanks"] = pigs
+    write_user_db(username, db)
+    return True
 
 #класс копилки. создает копилку и там же имеет функцию переноса остатка в копилку.
-#FROM storage.py
+# To core.py from storage.py
 class PiggyBank:
     def __init__(self, username):
         self.filename = f"{username}.json"
@@ -72,78 +111,11 @@ class PiggyBank:
         return False
 # --------------------------------------------------------------
 
-# FROM dealer_input
-def full_list_save(username):
-    """Сбор данных и моментальная запись в JSON пользователя"""
-    name = input("Введите имя нового шаблона: ").strip()
-    filename = f"{username}.json"
+#To core.py from logic.py
 
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            db = json.load(f)
-    except:
-        db = {}
+import json
 
-    if name in db:
-        print(f"!!! Ошибка: Шаблон '{name}' уже существует в вашей базе.")
-        return
 
-    fixes, percs = [], []
-    while True:
-        ask = input(f"[{name}] Добавить (f)икс, (p)роцент или (s)охранить всё?: ").lower()
-        if ask == 'f':
-            val = int(input("Сумма вычета: "))
-            desc = input("Описание фикса: ")
-            fixes.append([val, desc])
-        elif ask == 'p':
-            val = int(input("Процент (0-100): "))
-            if val > 100: val = 100
-            desc = input("Описание процента: ")
-            percs.append([val, desc])
-        elif ask == 's':
-            break
-
-    # Валидатор "воздуха": выравниваем списки до одинаковой длины
-    max_len = max(len(fixes), len(percs))
-    if max_len == 0:
-        print("Пустой шаблон не сохранен.")
-        return
-
-    while len(fixes) < max_len: fixes.append([0, "пусто"])
-    while len(percs) < max_len: percs.append([0, "пусто"])
-
-#Запись данных  в json.
-    # Заливаем в базу
-    db[name] = [fixes, percs]
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(db, f, indent=4, ensure_ascii=False)
-    print(f"--- Шаблон '{name}' успешно сохранен ---")
-# --------------------------------------------------------------
-
-def save_template(username, name, rules):
-    """
-    Сохранение шаблона: один список правил в порядке добавления (FIFO).
-    rules: [{"type": "f"|"p", "val": число, "desc": строка}, ...]
-    """
-    filename = f"{username}.json"
-    try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            db = json.load(f)
-    except Exception:
-        db = {}
-
-    if name in db:
-        return False, f"Шаблон '{name}' уже существует."
-
-    if not rules:
-        return False, "Пустой шаблон не сохранен."
-
-    db[name] = list(rules)
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(db, f, indent=4, ensure_ascii=False)
-    return True, None
-
-#FROM logic.py
 def run_fifo(amount, username, template_name=None):
     """
     Если template_name передан — использует его и возвращает (current_balance, history, fail_idx).
@@ -242,3 +214,51 @@ def run_fifo(amount, username, template_name=None):
         print(line)
     print("=" * 40 + "\n")
     return current_balance
+
+#To core.py from dealer_input. Optimize and divide to modules
+def full_list_save(username):
+    """Сбор данных и моментальная запись в JSON пользователя"""
+    name = input("Введите имя нового шаблона: ").strip()
+    filename = f"{username}.json"
+
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+    except:
+        db = {}
+
+    if name in db:
+        print(f"!!! Ошибка: Шаблон '{name}' уже существует в вашей базе.")
+        return
+
+    fixes, percs = [], []
+    while True:
+        ask = input(f"[{name}] Добавить (f)икс, (p)роцент или (s)охранить всё?: ").lower()
+        if ask == 'f':
+            val = int(input("Сумма вычета: "))
+            desc = input("Описание фикса: ")
+            fixes.append([val, desc])
+        elif ask == 'p':
+            val = int(input("Процент (0-100): "))
+            if val > 100: val = 100
+            desc = input("Описание процента: ")
+            percs.append([val, desc])
+        elif ask == 's':
+            break
+
+    # Валидатор "воздуха": выравниваем списки до одинаковой длины
+    max_len = max(len(fixes), len(percs))
+    if max_len == 0:
+        print("Пустой шаблон не сохранен.")
+        return
+
+    while len(fixes) < max_len: fixes.append([0, "пусто"])
+    while len(percs) < max_len: percs.append([0, "пусто"])
+
+#Запись данных  в json.
+    # Заливаем в базу
+    db[name] = [fixes, percs]
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(db, f, indent=4, ensure_ascii=False)
+    print(f"--- Шаблон '{name}' успешно сохранен ---")
+# --------------------------------------------------------------
