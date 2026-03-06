@@ -3,6 +3,14 @@
 
 import json
 
+#запись. To storage_test.py from app.py
+def create_profile(username):
+    """Создаёт файл профиля с базовой структурой."""
+    filename = f"{username}.json"
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump({"piggybanks": {}}, f, indent=4)
+    return True
+
 #чтение. To storage_test.py from app.py
 def get_user_db(username):
     """Читает JSON пользователя. Возвращает dict или None."""

@@ -2,25 +2,24 @@
 #Его роль это вызыв модулей исходя из значений условий
 
 import core, presentation, storage_test
-import auth, logic, storage, reader, dealer_input as di
 
 def start_session():
-    user = auth.authenticate()
+    user = presentation.authenticate()
     if not user: return False
 
-    bank = storage.PiggyBank(user)
+    bank = core.PiggyBank(user)
 
     while True:
-        action = di.hello()
+        action = presentation.hello()
 
         if "add" in action:
-            di.full_list_save(user)
+            core.full_list_save(user)
 
         if "bank" in action:
             bank.create_goal()
 
         if "read" in action:
-            reader.show_database(user)
+            storage_test.show_database(user)
             # Вывод копилок
             data = bank._read()
             if "piggybanks" in data and data["piggybanks"]:
@@ -34,7 +33,7 @@ def start_session():
             try:
 #core.py
                 sum_val = float(input("\nВведите сумму дохода: "))
-                remains = logic.run_fifo(sum_val, user)
+                remains = core.run_fifo(sum_val, user)
                 if remains > 0:
                     if input("Закинуть остаток в копилку? (y/n): ").lower() == 'y':
                         bank.deposit(remains)

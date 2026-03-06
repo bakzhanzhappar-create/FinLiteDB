@@ -7,6 +7,9 @@
 
 #To core.py from app.py
 #получаем словарь без копилки
+
+from storage_test import *
+
 def get_templates(username):
     """Список имён шаблонов (без piggybanks)."""
     db = get_user_db(username)
@@ -112,8 +115,6 @@ class PiggyBank:
 # --------------------------------------------------------------
 
 #To core.py from logic.py
-
-import json
 
 
 def run_fifo(amount, username, template_name=None):

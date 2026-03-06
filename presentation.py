@@ -4,9 +4,10 @@
 
 import json
 import streamlit as st
-import logic
-import storage
-import dealer_input
+import core #чисто для  run_fifo
+import storage_test
+from core import get_templates, delete_template, delete_piggybank, get_piggybanks
+from  storage_test import get_user_db, create_profile
 
 
 def authenticate():
@@ -57,7 +58,7 @@ if db is not None:
 else:
     st.session_state.user = None
     st.sidebar.warning(f"Профиль '{login}' не найден.")
-    if st.sidebar.button("Создать профиль"):
+    if st.sidebar.button("Создать профиль/Войти"):
         create_profile(login)
         st.session_state.user = login
         st.sidebar.success("Профиль создан. Обновите страницу или введите логин снова.")
@@ -86,7 +87,7 @@ with tab_fifo:
         template_name = st.selectbox("Шаблон", options=templates, key="fifo_template")
         if st.button("Рассчитать", key="btn_fifo"):
 #Здесь вызывают run_fifo  из logic.py
-            balance, history, fail_idx = logic.run_fifo(amount, username, template_name=template_name)
+            balance, history, fail_idx = core.run_fifo(amount, username, template_name=template_name)
             for line in history:
                 st.write(line)
             if fail_idx is not None:
@@ -164,7 +165,7 @@ with tab_templates:
         elif not st.session_state._rules:
             st.error("Добавьте хотя бы одно правило (фикс или процент).")
         else:
-            ok, err = dealer_input.save_template(username, new_name.strip(), list(st.session_state._rules))
+            ok, err = storage_test.save_template(username, new_name.strip(), list(st.session_state._rules))
             if ok:
                 st.success(f"Шаблон «{new_name}» сохранён.")
                 st.session_state._rules = []
@@ -196,7 +197,7 @@ with tab_piggy:
         st.write("Остаток после расчёта FIFO можно закинуть в копилку:")
         goal = st.selectbox("В какую копилку?", options=list(banks.keys()), key="piggy_goal")
         if st.button("Закинуть остаток", key="btn_deposit"):
-            bank = storage.PiggyBank(username)
+            bank = core.PiggyBank(username)
             if bank.deposit(remains, goal_name=goal):
                 st.session_state.fifo_remains = None
                 st.success(f"Зачислено {remains:.2f} в «{goal}».")
@@ -212,7 +213,7 @@ with tab_piggy:
     g_link = st.text_input("Описание (необязательно)", key="goal_link")
     if st.button("Создать копилку", key="btn_create_goal"):
         if g_name.strip() and g_target > 0:
-            bank = storage.PiggyBank(username)
+            bank = core.PiggyBank(username)
             bank.create_goal(name=g_name.strip(), target=g_target, link=g_link or "")
             st.success(f"Копилка «{g_name}» создана.")
             st.rerun()
