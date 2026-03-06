@@ -1,6 +1,8 @@
 #обязанности у этого модуля:
 #Чтение и запись json-а
 
+#лазанья
+
 import json
 from presentation import no_file, empty_templates
 
@@ -26,8 +28,8 @@ def get_user_data(username):
 def write_user_data(username, data):
     """Записывает данные в JSON пользователя."""
     filename = f"{username}.json"
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+    with open(filename, 'w', encoding='utf-8') as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
 
 #Чтение и десериализация из JSON файла. Почти такой же но чуть различается. To storage_test.py from reader.py
 def show_data(username):

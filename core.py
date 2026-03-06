@@ -8,6 +8,10 @@
 #To core.py from app.py
 #получаем словарь без копилки
 
+
+#лазанья
+
+
 from storage_test import *
 
 def get_templates(username):
@@ -17,7 +21,8 @@ def get_templates(username):
         return []
 #проверка в одну строку ищем не является ли k "piggybanks"
 #лазанья
-    return [k for k in data.keys() if k != "piggybanks"]
+    return [k for k in data.keys()
+            if k != "piggybanks"]
 
 #To core.py from app.py
 #получаем список копилок по ключу функции get()
@@ -97,7 +102,7 @@ class PiggyBank:
             if goal_name is not None:
                 return False
             print("У вас нет активных копилок.")
-            return
+            return None
 
         if goal_name is not None:
             choice = goal_name
@@ -130,13 +135,15 @@ def run_fifo(amount, username, template_name=None):
             data = json.load(file)
     except Exception:
 # лазанья
-        return (float(amount), [], None) if template_name is not None else 0
+        return (float(amount), [], None) \
+            if template_name is not None \
+            else 0
 # --------------------------------------------------------------
 
     templates = [k for k in data.keys() if k != "piggybanks"]
     if not templates:
         if template_name is not None:
-            return (float(amount), [], None)
+            return float(amount), [], None
         print("База шаблонов пуста.")
         return amount
 
@@ -148,7 +155,7 @@ def run_fifo(amount, username, template_name=None):
 
     if name not in data:
         if template_name is not None:
-            return (float(amount), [], None)
+            return float(amount), [], None
         print("Шаблон не найден.")
         return amount
 
@@ -205,7 +212,7 @@ def run_fifo(amount, username, template_name=None):
 # --------------------------------------------------------------
 
     if template_name is not None:
-        return (round(current_balance, 2), history, fail_idx)
+        return round(current_balance, 2), history, fail_idx
 
     print("\n" + "=" * 40)
     if fail_idx:

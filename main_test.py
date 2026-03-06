@@ -1,6 +1,8 @@
 #обязанности у этого модуля:
 #Его роль это вызыв модулей исходя из значений условий
 
+#лазанья
+
 import core, presentation, storage_test
 
 def start_session():

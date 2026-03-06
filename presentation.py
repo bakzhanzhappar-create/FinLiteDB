@@ -1,6 +1,9 @@
 #обязанности у этого модуля:
-#Строго Output и веб интерфейс функционал
+#Строго I/O и веб интерфейс функционал
 #To presentation.py from auth.py
+
+#лазанья
+
 
 import json
 import streamlit as st
@@ -112,7 +115,8 @@ with tab_templates:
     st.subheader("Мои Шаблоны")
     data = get_user_data(username)
 # лазанья
-    templates_dict = {k: v for k, v in (data or {}).items() if k != "piggybanks"}
+    templates_dict = {k: v for k, v in (data or {}).items()
+                      if k != "piggybanks"}
     if not templates_dict:
         st.write("Шаблонов пока нет.")
     else:
@@ -239,7 +243,8 @@ with tab_delete:
     templates_all = get_templates(username)
     if search_tpl.strip():
 # лазанья
-        templates_filtered = [n for n in templates_all if search_tpl.strip().lower() in n.lower()]
+        templates_filtered = [n for n in templates_all
+                              if search_tpl.strip().lower() in n.lower()]
     else:
         templates_filtered = templates_all
     if not templates_filtered:
@@ -265,12 +270,14 @@ with tab_delete:
     bank_names = list(banks.keys())
     if search_pig.strip():
 # лазанья
-        banks_filtered = [n for n in bank_names if search_pig.strip().lower() in n.lower()]
+        banks_filtered = [n for n in bank_names
+                          if search_pig.strip().lower() in n.lower()]
     else:
         banks_filtered = bank_names
     if not banks_filtered:
 # лазанья
-        st.caption("Нет копилок" + (" по запросу." if search_pig.strip() else "."))
+        st.caption("Нет копилок" + (" по запросу." if search_pig.strip()
+                                    else "."))
     else:
         for name in banks_filtered:
             col1, col2 = st.columns([3, 1])
