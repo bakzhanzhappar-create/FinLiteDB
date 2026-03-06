@@ -12,41 +12,42 @@ from storage_test import *
 
 def get_templates(username):
     """Список имён шаблонов (без piggybanks)."""
-    db = get_user_db(username)
-    if not db:
+    data = get_user_data(username)
+    if not data:
         return []
 #проверка в одну строку ищем не является ли k "piggybanks"
-    return [k for k in db.keys() if k != "piggybanks"]
+#лазанья
+    return [k for k in data.keys() if k != "piggybanks"]
 
 #To core.py from app.py
 #получаем список копилок по ключу функции get()
 def get_piggybanks(username):
     """Словарь копилок пользователя."""
-    db = get_user_db(username)
-    if not db:
+    data = get_user_data(username)
+    if not data:
         return {}
-    return db.get("piggybanks", {})
+    return data.get("piggybanks", {})
 
 #To core.py from app.py
 def delete_template(username, template_name):
     """Удаляет шаблон по имени. Возвращает True при успехе."""
-    db = get_user_db(username)
-    if not db or template_name not in db or template_name == "piggybanks":
+    data = get_user_data(username)
+    if not data or template_name not in data or template_name == "piggybanks":
         return False
-    del db[template_name]
-    write_user_db(username, db)
+    del data[template_name]
+    write_user_data(username, data)
     return True
 
 #To core.py from app.py
 def delete_piggybank(username, goal_name):
     """Удаляет копилку по имени. Возвращает True при успехе."""
-    db = get_user_db(username)
-    if not db: return False
-    pigs = db.get("piggybanks", {})
+    data = get_user_data(username)
+    if not data: return False
+    pigs = data.get("piggybanks", {})
     if goal_name not in pigs: return False
     del pigs[goal_name]
-    db["piggybanks"] = pigs
-    write_user_db(username, db)
+    data["piggybanks"] = pigs
+    write_user_data(username, data)
     return True
 
 #класс копилки. создает копилку и там же имеет функцию переноса остатка в копилку.
@@ -57,16 +58,16 @@ class PiggyBank:
 
     def _read(self):
         try:
-            with open(self.filename, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            with open(self.filename, 'r', encoding='utf-8') as file:
+                return json.load(file)
         except:
             return {"piggybanks": {}}
 
     def _write(self, data):
-        with open(self.filename, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
+        with open(self.filename, 'w', encoding='utf-8') as file:
+            json.dump(data, file, indent=4, ensure_ascii=False)
 
-    def create_goal(self, name=None, target=None, link=None):
+    def create_piggybank(self, name=None, target=None, link=None):
         if name is None:
             name = input("На что копим? (имя цели): ").strip()
         if target is None:
@@ -74,23 +75,23 @@ class PiggyBank:
         if link is None:
             link = input("Ссылка на товар/описание: ")
 
-        data = self._read()
-        if "piggybanks" not in data:
-            data["piggybanks"] = {}
+        piggy_data = self._read()
+        if "piggybanks" not in piggy_data:
+            piggy_data["piggybanks"] = {}
 
-        data["piggybanks"][name] = {
+        piggy_data["piggybanks"][name] = {
             "target": float(target),
             "current": 0.0,
             "link": link or ""
         }
-        self._write(data)
+        self._write(piggy_data)
         if name is not None and target is not None:
             return
         print(f"Копилка '{name}' активирована!")
 
     def deposit(self, amount, goal_name=None):
-        data = self._read()
-        banks = data.get("piggybanks", {})
+        piggy_data = self._read()
+        banks = piggy_data.get("piggybanks", {})
 
         if not banks:
             if goal_name is not None:
@@ -106,7 +107,7 @@ class PiggyBank:
 
         if choice in banks:
             banks[choice]["current"] += float(amount)
-            self._write(data)
+            self._write(piggy_data)
             if goal_name is None:
                 prog = (banks[choice]['current'] / banks[choice]['target']) * 100
                 print(f"Зачислили {amount}. Прогресс '{choice}': {round(prog, 1)}%")
@@ -122,16 +123,17 @@ def run_fifo(amount, username, template_name=None):
     Если template_name передан — использует его и возвращает (current_balance, history, fail_idx).
     Иначе — консольный ввод (для совместимости).
     """
-#чтение файла и загрузка всех данных в локальную переменную db
+#чтение файла и загрузка всех данных в локальную переменную data
     filename = f"{username}.json"
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            db = json.load(f)
+        with open(filename, 'r', encoding='utf-8') as file:
+            data = json.load(file)
     except Exception:
+# лазанья
         return (float(amount), [], None) if template_name is not None else 0
 # --------------------------------------------------------------
 
-    templates = [k for k in db.keys() if k != "piggybanks"]
+    templates = [k for k in data.keys() if k != "piggybanks"]
     if not templates:
         if template_name is not None:
             return (float(amount), [], None)
@@ -144,13 +146,13 @@ def run_fifo(amount, username, template_name=None):
         print("Доступные шаблоны:", templates)
         name = input("Выберите шаблон для расчета: ")
 
-    if name not in db:
+    if name not in data:
         if template_name is not None:
             return (float(amount), [], None)
         print("Шаблон не найден.")
         return amount
 
-    raw = db[name]
+    raw = data[name]
     # Новый формат: один список правил в порядке добавления (FIFO)
 #isinstance() проверяет какой тип данных перед ним, после запятой стоит целевой тип данных. Если сходится то True, иначе False
 #В данном случае что то вроде валидация данных перед расчетами проверяя колво f и p правил.
@@ -160,6 +162,7 @@ def run_fifo(amount, username, template_name=None):
     if isinstance(raw, list) and raw and isinstance(raw[0], dict) and "type" in raw[0]:
         rules_ordered = raw
     else:
+#лазанья
         # Старый формат [fixes, percs] — приводим к порядку: сначала все фиксы по шагам, потом проценты по шагам
         rules_f, rules_p = raw
         rules_ordered = []
@@ -223,12 +226,12 @@ def full_list_save(username):
     filename = f"{username}.json"
 
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            db = json.load(f)
+        with open(filename, 'r', encoding='utf-8') as file:
+            data = json.load(file)
     except:
-        db = {}
+        data = {}
 
-    if name in db:
+    if name in data:
         print(f"!!! Ошибка: Шаблон '{name}' уже существует в вашей базе.")
         return
 
@@ -258,8 +261,8 @@ def full_list_save(username):
 
 #Запись данных  в json.
     # Заливаем в базу
-    db[name] = [fixes, percs]
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(db, f, indent=4, ensure_ascii=False)
+    data[name] = [fixes, percs]
+    with open(filename, 'w', encoding='utf-8') as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
     print(f"--- Шаблон '{name}' успешно сохранен ---")
 # --------------------------------------------------------------

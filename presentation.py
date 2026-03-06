@@ -7,7 +7,7 @@ import streamlit as st
 import core #чисто для  run_fifo
 import storage_test
 from core import get_templates, delete_template, delete_piggybank, get_piggybanks
-from  storage_test import get_user_db, create_profile
+from  storage_test import get_user_data, create_username
 
 
 def authenticate():
@@ -18,15 +18,15 @@ def authenticate():
 
     try:
         # Пробуем открыть файл пользователя
-        with open(filename, 'r', encoding='utf-8') as f:
-            json.load(f)
+        with open(filename, 'r', encoding='utf-8') as file:
+            json.load(file)
         print(f"С возвращением, {user}!")
     except (FileNotFoundError, json.JSONDecodeError):
         # Если файла нет — создаем новый с базовой структурой
         choice = input(f"Профиль '{user}' не найден. Создать новый? (y/n): ").lower()
         if choice == 'y':
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump({"piggybanks": {}}, f, indent=4)
+            with open(filename, 'w', encoding='utf-8') as file:
+                json.dump({"piggybanks": {}}, file, indent=4)
             print(f"Создана личная база: {filename}")
         else:
             return None
@@ -36,6 +36,14 @@ def authenticate():
 def hello():
     return input(
         "\n <<add>> создать шаблон \n <<read>> база данных \n <<interact>> расчет FIFO \n <<bank>> создать копилку \n <<exit>> выход \n").lower()
+
+#функция реакции
+def no_file():
+    print("База пуста.")
+    
+#функция реакции
+def empty_templates():
+    print("Шаблонов пока нет.")
 
 
 #To presentation.py from app.py. Optimize and divide to modules
@@ -51,15 +59,15 @@ login = st.sidebar.text_input("Логин", value="", key="login").strip().lower
 if not login:
     login = "guest"
 
-db = get_user_db(login)
-if db is not None:
+data = get_user_data(login)
+if data is not None:
     st.session_state.user = login
     st.sidebar.success(f"Привет, {login}!")
 else:
     st.session_state.user = None
     st.sidebar.warning(f"Профиль '{login}' не найден.")
     if st.sidebar.button("Создать профиль/Войти"):
-        create_profile(login)
+        create_username(login)
         st.session_state.user = login
         st.sidebar.success("Профиль создан. Обновите страницу или введите логин снова.")
         st.rerun()
@@ -72,6 +80,7 @@ if st.session_state.user is None:
 username = st.session_state.user
 
 # --- Вкладки ---
+#лазанья
 tab_fifo, tab_templates, tab_piggy, tab_delete = st.tabs([
     "💰 Расчет FIFO", "📊 Мои Шаблоны", "🐷 Копилка", "🗑️ Удаление"
 ])
@@ -101,13 +110,15 @@ with tab_fifo:
 # ---------- Вкладка: Мои Шаблоны ----------
 with tab_templates:
     st.subheader("Мои Шаблоны")
-    db = get_user_db(username)
-    templates_dict = {k: v for k, v in (db or {}).items() if k != "piggybanks"}
+    data = get_user_data(username)
+# лазанья
+    templates_dict = {k: v for k, v in (data or {}).items() if k != "piggybanks"}
     if not templates_dict:
         st.write("Шаблонов пока нет.")
     else:
         for name, rules in templates_dict.items():
             # Новый формат: один список правил в порядке FIFO
+# лазанья
             if isinstance(rules, list) and rules and isinstance(rules[0], dict) and rules[0].get("type") in ("f", "p"):
                 total = len(rules)
                 with st.expander(f" {name} (правил: {total})"):
@@ -165,6 +176,7 @@ with tab_templates:
         elif not st.session_state._rules:
             st.error("Добавьте хотя бы одно правило (фикс или процент).")
         else:
+# лазанья
             ok, err = storage_test.save_template(username, new_name.strip(), list(st.session_state._rules))
             if ok:
                 st.success(f"Шаблон «{new_name}» сохранён.")
@@ -214,7 +226,7 @@ with tab_piggy:
     if st.button("Создать копилку", key="btn_create_goal"):
         if g_name.strip() and g_target > 0:
             bank = core.PiggyBank(username)
-            bank.create_goal(name=g_name.strip(), target=g_target, link=g_link or "")
+            bank.create_piggybank(name=g_name.strip(), target=g_target, link=g_link or "")
             st.success(f"Копилка «{g_name}» создана.")
             st.rerun()
         else:
@@ -226,10 +238,12 @@ with tab_delete:
     search_tpl = st.text_input("Поиск по названию шаблона", key="search_tpl", placeholder="Введите часть названия...")
     templates_all = get_templates(username)
     if search_tpl.strip():
+# лазанья
         templates_filtered = [n for n in templates_all if search_tpl.strip().lower() in n.lower()]
     else:
         templates_filtered = templates_all
     if not templates_filtered:
+# лазанья
         st.caption("Нет шаблонов" + (" по запросу." if search_tpl.strip() else "."))
     else:
         for name in templates_filtered:
@@ -250,10 +264,12 @@ with tab_delete:
     banks = get_piggybanks(username)
     bank_names = list(banks.keys())
     if search_pig.strip():
+# лазанья
         banks_filtered = [n for n in bank_names if search_pig.strip().lower() in n.lower()]
     else:
         banks_filtered = bank_names
     if not banks_filtered:
+# лазанья
         st.caption("Нет копилок" + (" по запросу." if search_pig.strip() else "."))
     else:
         for name in banks_filtered:

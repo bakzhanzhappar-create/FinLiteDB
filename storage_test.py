@@ -2,47 +2,49 @@
 #Чтение и запись json-а
 
 import json
+from presentation import no_file, empty_templates
 
 #запись. To storage_test.py from app.py
-def create_profile(username):
+def create_username(username):
     """Создаёт файл профиля с базовой структурой."""
     filename = f"{username}.json"
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump({"piggybanks": {}}, f, indent=4)
+    with open(filename, 'w', encoding='utf-8') as file:
+        json.dump({"piggybanks": {}}, file, indent=4)
     return True
 
 #чтение. To storage_test.py from app.py
-def get_user_db(username):
+def get_user_data(username):
     """Читает JSON пользователя. Возвращает dict или None."""
     filename = f"{username}.json"
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        with open(filename, 'r', encoding='utf-8') as file:
+            return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
         return None
 
 #запись. To storage_test.py from app.py
-def write_user_db(username, data):
+def write_user_data(username, data):
     """Записывает данные в JSON пользователя."""
     filename = f"{username}.json"
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 #Чтение и десериализация из JSON файла. Почти такой же но чуть различается. To storage_test.py from reader.py
-def show_database(username):
+def show_data(username):
     filename = f"{username}.json"
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            db = json.load(f)
+        with open(filename, 'r', encoding='utf-8') as file:
+            data = json.load(file)
     except:
-        print("База пуста.")
+        no_file()
         return
 
     print(f"\n--- БАЗА ПОЛЬЗОВАТЕЛЯ: {username} ---")
-    templates = {k: v for k, v in db.items() if k != "piggybanks"}
+# лазанья
+    templates = {k: v for k, v in data.items() if k != "piggybanks"}
 
     if not templates:
-        print("Шаблонов пока нет.")
+        empty_templates()
     else:
         for name, rules in templates.items():
             f_list, p_list = rules
@@ -62,18 +64,18 @@ def save_template(username, name, rules):
     """
     filename = f"{username}.json"
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            db = json.load(f)
+        with open(filename, 'r', encoding='utf-8') as file:
+            data = json.load(file)
     except Exception:
-        db = {}
+        data = {}
 
-    if name in db:
+    if name in data:
         return False, f"Шаблон '{name}' уже существует."
 
     if not rules:
         return False, "Пустой шаблон не сохранен."
 
-    db[name] = list(rules)
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(db, f, indent=4, ensure_ascii=False)
+    data[name] = list(rules)
+    with open(filename, 'w', encoding='utf-8') as file:
+        json.dump(data, file, indent=4, ensure_ascii=False)
     return True, None

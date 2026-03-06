@@ -16,18 +16,20 @@ def start_session():
             core.full_list_save(user)
 
         if "bank" in action:
-            bank.create_goal()
+            bank.create_piggybank()
 
         if "read" in action:
-            storage_test.show_database(user)
+            storage_test.show_data(user)
             # Вывод копилок
             data = bank._read()
             if "piggybanks" in data and data["piggybanks"]:
 #presentation.py
                 print("\n ВАШИ КОПИЛКИ:")
                 for n, i in data["piggybanks"].items():
+    #core.py logic! Move it to core.py
                     prog = (i['current'] / i['target']) * 100
                     print(f"[{n}] {i['current']}/{i['target']} ({round(prog, 1)}%) | {i['link']}")
+    # --------------------------------------------------------------
 #--------------------------------------------------------------
         if "interact" in action:
             try:
@@ -48,5 +50,7 @@ def start_session():
 
 if __name__ == "__main__":
     while True:
-        if not start_session(): break
-        if input("\nСменить пользователя? (y/n): ").lower() != 'y': break
+        if not start_session():
+            break
+        if input("\nСменить пользователя? (y/n): ").lower() != 'y':
+            break
