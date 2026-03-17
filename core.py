@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, replace
+import decimal
 from uuid import UUID
 
 
@@ -69,7 +70,7 @@ class Template:
         return amount
 
 money: float = 52_000
-
+money: decimal
 t = Template(
     payments=[
         Percentage(30),
