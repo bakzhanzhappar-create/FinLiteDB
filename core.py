@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, replace
-import decimal
+from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID
 
 
@@ -8,6 +8,20 @@ class InvalidTemplateError(Exception):
 
 class InvalidPaymentError(Exception):
     ...
+
+
+@dataclass(frozen=True, slots=True)
+class Bank:
+    scale: Decimal = field(default=0.0)
+    description: str = field(default="")
+    target_scale: Decimal = field(default=0.1)
+
+    def post_init(self)-> None:
+        if self.scale < 0:
+            raise InvalidPaymentError("It cant be negative")
+
+    def target_success(self)-> None:
+        if self.target_scale<=self.scale:
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,7 +84,6 @@ class Template:
         return amount
 
 money: float = 52_000
-money: decimal
 t = Template(
     payments=[
         Percentage(30),
