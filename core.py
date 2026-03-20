@@ -94,5 +94,5 @@ t = Template(
 )
 
 money = t.apply(money)
-
+print(money)
 print(money)
