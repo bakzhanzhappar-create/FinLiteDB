@@ -1,11 +1,14 @@
-from dataclasses import dataclass
 import json
 
 
-@dataclass(frozen=True)
+
+
 class write:
+    def validation(self):
+        with open(f"{filename}.json", mode='r', encoding='utf-8') as file:
+
     def writeJSON(self):
-        with open(f"{name}.json", mode ='w', encoding='utf-8') as file:
+        with open(f"{filename}.json", mode='w', encoding='utf-8') as file:
             json.dump(self, file, ensure_ascii=False, indent=4)
 
 
