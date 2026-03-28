@@ -42,12 +42,16 @@ class Fix(Payment):
         return amount - self.value
 
 
+class Bank:
+    ...
+
+#пока не доделан соответственно pass
 @dataclass(frozen=True, slots=True)
 class Bank:
     amount: Decimal=Decimal('0')
     description: str = field(default="")
     target_scale: Decimal=Decimal('0')
-
+    name: str=field(default="Piggybank")
 
     def __post_init__(self) -> None:
         if self.amount < 0:
@@ -77,13 +81,31 @@ class Template:
 money= Decimal('52000')
 t = Template(
     payments=[
-        Percentage(value=Decimal('30')),
         Fix(Decimal('10000')),
         Fix(Decimal('20000')),
         Fix(Decimal('1000')),
-    ]
+        Percentage(value=Decimal('30')),
+    ],
+    description="bruh bruh bruh"
 )
 
 money = t.apply(money)
 print(money)
-print(money)
+print(t.description)
+
+
+
+# username=Template(
+#     payments=[
+#
+#         Percentage(value=Decimal('30')),
+#         Fix(Decimal('10000')),
+#         Fix(Decimal('20000')),
+#         Fix(Decimal('1000')),
+#     ],
+#     description="bruh bruh bruh"
+# )
+# userdict=dict(username)
+
+
+#крч проценты работают не от входной суммы!
