@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
 from uuid import UUID
 
@@ -44,24 +44,31 @@ class Fix(Payment):
 
 class Bank:
     ...
-
 #пока не доделан соответственно pass
-@dataclass(frozen=True, slots=True)
+
+
+@dataclass()
 class Bank:
     amount: Decimal=Decimal('0')
     description: str = field(default="")
-    target_scale: Decimal=Decimal('0')
+    target_scale: Decimal=Decimal('1')
     name: str=field(default="Piggybank")
 
     def __post_init__(self) -> None:
         if self.amount < 0:
-            raise InvalidTemplateError("Amount must be positive")
+            raise InvalidPaymentError("Amount must be positive")
 
-    def add_money(self, amount: Payment) -> Bank:
-        return replace(self, amount=amount.value + self.amount)
+        if self.target_scale < 0:
+            raise InvalidPaymentError("Target scale must be positive")
 
-    # def target_success(self)-> None:
-    #     if self.target_scale<=self.amount:
+
+    def add_money(self, amount: Decimal) -> Decimal:
+        self.amount +=amount
+        return self.amount
+
+    def target_success(self)-> None:
+        if self.target_scale<=self.amount:
+            del self.amount, self.target_scale, self.name, self.description
 
 @dataclass(frozen=True, slots=True)
 class Template:
@@ -81,31 +88,27 @@ class Template:
 money= Decimal('52000')
 t = Template(
     payments=[
+#       Percentage(value=Decimal('30')),
         Fix(Decimal('10000')),
         Fix(Decimal('20000')),
         Fix(Decimal('1000')),
         Percentage(value=Decimal('30')),
     ],
-    description="bruh bruh bruh"
+    description ="for foods"
 )
 
 money = t.apply(money)
 print(money)
 print(t.description)
 
+money_for_bank=Decimal('12000')
+b= Bank(
+    name="Lada",
+    target_scale=Decimal('45000'),
+    description="Once i have a dream that one day ill move w niggas to diff cities"
+)
 
-
-# username=Template(
-#     payments=[
-#
-#         Percentage(value=Decimal('30')),
-#         Fix(Decimal('10000')),
-#         Fix(Decimal('20000')),
-#         Fix(Decimal('1000')),
-#     ],
-#     description="bruh bruh bruh"
-# )
-# userdict=dict(username)
-
-
-#крч проценты работают не от входной суммы!
+money_for_bank=b.add_money(money_for_bank)
+print(money_for_bank)
+print(b.description)
+print(b.amount)
