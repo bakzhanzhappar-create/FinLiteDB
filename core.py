@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
-from uuid import UUID
-
+# from uuid import UUID
+# чисто генератор идентификатора, нужен будет потом с логинами считай идентификатор логинов и ключ в их шаблонах если будет проеб с данными
 
 class InvalidTemplateError(Exception):
     ...
@@ -13,7 +13,7 @@ class InvalidPaymentError(Exception):
 @dataclass(frozen=True, slots=True)
 class Payment:
     value: Decimal=Decimal('0')
-    description: str = field(default="Без описания")
+    name: str = field(default="Шаблон")
 
     def __post_init__(self) -> None:
         if self.value < 0:
@@ -40,11 +40,6 @@ class Fix(Payment):
 
     def apply(self, amount: Decimal) -> Decimal:
         return amount - self.value
-
-
-class Bank:
-    ...
-#пока не доделан соответственно pass
 
 
 @dataclass()
@@ -74,7 +69,7 @@ class Bank:
 class Template:
 
     payments: list[Fix | Percentage] = field(default_factory=list)
-    description: str = field(default="Без описания")
+    name: str = field(default="Шаблон")
 
     def __post_init__(self) -> None:
         if not self.payments:
@@ -88,18 +83,17 @@ class Template:
 money= Decimal('52000')
 t = Template(
     payments=[
-#       Percentage(value=Decimal('30')),
         Fix(Decimal('10000')),
         Fix(Decimal('20000')),
         Fix(Decimal('1000')),
         Percentage(value=Decimal('30')),
     ],
-    description ="for foods"
+    name ="for foods"
 )
 
 money = t.apply(money)
 print(money)
-print(t.description)
+print(t.name)
 
 money_for_bank=Decimal('12000')
 b= Bank(
