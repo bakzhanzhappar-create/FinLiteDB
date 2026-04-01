@@ -42,7 +42,7 @@ class Fix(Payment):
         return amount - self.value
 
 
-@dataclass()
+@dataclass(slots=True)
 class Bank:
     amount: Decimal=Decimal('0')
     description: str = field(default="")
@@ -61,9 +61,8 @@ class Bank:
         self.amount +=amount
         return self.amount
 
-    def target_success(self)-> None:
-        if self.target_scale<=self.amount:
-            del self.amount, self.target_scale, self.name, self.description
+    def is_target_success(self)-> bool:
+        return self.target_scale<=self.amount
 
 @dataclass(frozen=True, slots=True)
 class Template:
@@ -95,7 +94,7 @@ money = t.apply(money)
 print(money)
 print(t.name)
 
-money_for_bank=Decimal('12000')
+money_for_bank=Decimal('1111111111134')
 b= Bank(
     name="Lada",
     target_scale=Decimal('45000'),
@@ -106,3 +105,4 @@ money_for_bank=b.add_money(money_for_bank)
 print(money_for_bank)
 print(b.description)
 print(b.amount)
+print(b.is_target_success())
