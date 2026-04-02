@@ -59,6 +59,7 @@ class Bank:
 
     def add_money(self, amount: Decimal) -> Decimal:
         self.amount +=amount
+        self.amount=self.amount.quantize(Decimal('1.00'), rounding=ROUND_HALF_UP)
         return self.amount
 
     def is_target_success(self)-> bool:
@@ -94,7 +95,7 @@ money = t.apply(money)
 print(money)
 print(t.name)
 
-money_for_bank=Decimal('1111111111134')
+money_for_bank=Decimal('111.8998')
 b= Bank(
     name="Lada",
     target_scale=Decimal('45000'),
@@ -106,3 +107,7 @@ print(money_for_bank)
 print(b.description)
 print(b.amount)
 print(b.is_target_success())
+
+m1=Decimal('123.17658857')
+money_for_bank=b.add_money(m1)
+print(b.amount)
