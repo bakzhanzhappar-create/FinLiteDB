@@ -1,4 +1,4 @@
 import FastAPI
 
 main
-@app.get
+@app.get()
