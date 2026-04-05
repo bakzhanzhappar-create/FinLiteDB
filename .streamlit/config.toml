@@ -1,0 +1,10 @@
+# Светлая тема по умолчанию (согласовано с app.py — контрастные поля)
+[theme]
+primaryColor = "#4FAF3B"
+backgroundColor = "#ECEFEA"
+secondaryBackgroundColor = "#E2E8DE"
+textColor = "#0A1F08"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"
