@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
-# from uuid import UUID
-# чисто генератор идентификатора, нужен будет потом с логинами считай идентификатор логинов и ключ в их шаблонах если будет проеб с данными
+
 
 class InvalidTemplateError(Exception):
     ...
