@@ -8,4 +8,7 @@ def read_root():
     html_content="<h2>Hello World!</h2>"
     return HTMLResponse(content=html_content)
 
-@app.get("/")
+@app.put("/")
+def update_root():
+    html_content="<h2>Hello World!</h2>"
+    return HTMLResponse(content=html_content)

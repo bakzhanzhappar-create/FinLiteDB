@@ -12,7 +12,7 @@ class InvalidPaymentError(Exception):
 @dataclass(frozen=True, slots=True)
 class Payment:
     value: Decimal=Decimal('0')
-    name: str = field(default="Шаблон")
+    description: str = field(default="Пусто")
 
     def __post_init__(self) -> None:
         if self.value < 0:
@@ -82,7 +82,7 @@ class Template:
 money= Decimal('52000')
 t = Template(
     payments=[
-        Fix(Decimal('10000')),
+        Fix(Decimal('10000'), "coca cola"),
         Fix(Decimal('20000')),
         Fix(Decimal('1000')),
         Percentage(value=Decimal('30')),
@@ -93,6 +93,7 @@ t = Template(
 money = t.apply(money)
 print(money)
 print(t.name)
+print(t.payments[1].description)
 
 money_for_bank=Decimal('111.8998')
 b= Bank(
@@ -101,12 +102,12 @@ b= Bank(
     description="Once i have a dream that one day ill move w niggas to diff cities"
 )
 
-money_for_bank=b.add_money(money_for_bank)
-print(money_for_bank)
-print(b.description)
-print(b.amount)
-print(b.is_target_success())
-
-m1=Decimal('123.17658857')
-money_for_bank=b.add_money(m1)
-print(b.amount)
+# money_for_bank=b.add_money(money_for_bank)
+# print(money_for_bank)
+# print(b.description)
+# print(b.amount)
+# print(b.is_target_success())
+#
+# m1=Decimal('123.17658857')
+# money_for_bank=b.add_money(m1)
+# print(b.amount)
