@@ -79,28 +79,44 @@ class Template:
             amount = payment.apply(amount)
         return amount
 
-money= Decimal('52000')
-t = Template(
+
+scholarship= Decimal('52367')
+t=Template(
     payments=[
-        Fix(Decimal('10000'), "coca cola"),
-        Fix(Decimal('20000')),
-        Fix(Decimal('1000')),
-        Percentage(value=Decimal('30')),
-    ],
-    name ="for foods"
-)
+        Fix(Decimal('1320'), description="за проезд"),
+        Fix(Decimal('5790'), description="за тариф"),
+        Fix(Decimal('5000'), description="сестренке"),
+        Fix(Decimal('28000'), description="на все про все"),
+        Fix(Decimal('12257'), description="самоналог"),
+    ])
+scholarship=t.apply(scholarship)
+print(scholarship)
 
-money = t.apply(money)
-print(money)
-print(t.name)
-print(t.payments[1].description)
+for i in t.payments:
+    print(i)
 
-money_for_bank=Decimal('111.8998')
-b= Bank(
-    name="Lada",
-    target_scale=Decimal('45000'),
-    description="Once i have a dream that one day ill move w niggas to diff cities"
-)
+# money= Decimal('52000')
+# t = Template(
+#     payments=[
+#         Fix(Decimal('10000'), "coca cola"),
+#         Fix(Decimal('20000')),
+#         Fix(Decimal('1000')),
+#         Percentage(value=Decimal('30')),
+#     ],
+#     name ="for foods"
+# )
+#
+# money = t.apply(money)
+# print(money)
+# print(t.name)
+# print(t.payments[1].description)
+#
+# money_for_bank=Decimal('111.8998')
+# b= Bank(
+#     name="Lada",
+#     target_scale=Decimal('45000'),
+#     description="Once i have a dream that one day ill move w niggas to diff cities"
+# )
 
 # money_for_bank=b.add_money(money_for_bank)
 # print(money_for_bank)
