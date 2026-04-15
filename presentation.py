@@ -8,6 +8,6 @@ def users(id):
 
 
 
-wse
-s
-def
+@app.get("/users/{id}")
+def users(id):
+    return {"user_id": id}
