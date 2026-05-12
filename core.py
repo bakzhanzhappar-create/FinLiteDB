@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP
 
+class InvalidTypeError(Exception):
+    ...
 
 class InvalidTemplateError(Exception):
     ...
@@ -8,6 +10,16 @@ class InvalidTemplateError(Exception):
 class InvalidPaymentError(Exception):
     ...
 
+@dataclass(slots=True)
+class Validator:
+    value: str
+    target_type: type = Decimal
+
+    def __post_init__(self) -> None:
+        try:
+            self.target_type(self.value)
+        except (Exception):
+            raise InvalidTypeError(f" {self.value} тут есть буква")
 
 @dataclass(frozen=True, slots=True)
 class Payment:
