@@ -10,16 +10,6 @@ class InvalidTemplateError(Exception):
 class InvalidPaymentError(Exception):
     ...
 
-@dataclass(slots=True)
-class Validator:
-    value: str
-    target_type: type = Decimal
-
-    def __post_init__(self) -> None:
-        try:
-            self.target_type(self.value)
-        except (Exception):
-            raise InvalidTypeError(f" {self.value} тут есть буква")
 
 @dataclass(frozen=True, slots=True)
 class Payment:
@@ -73,8 +63,26 @@ class Bank:
         self.amount=self.amount.quantize(Decimal('1.00'), rounding=ROUND_HALF_UP)
         return self.amount
 
+    # def give_money(self, amount: Decimal)-> Decimal:
+    #     self.amount -= amount
+    #     return self.amount
+    # крч прописать передачу денег другому сущности (шаблону или банку)
+
     def is_target_success(self)-> bool:
         return self.target_scale<=self.amount
+
+
+@dataclass(slots=True)
+class Validator:
+    value: str | Decimal
+    target_type: type = Decimal
+
+    def __post_init__(self) -> None:
+        try:
+            self.value=self.target_type(self.value)
+        except TypeError:
+            raise InvalidTypeError(f" {self.value} тут есть некорректный символ")
+
 
 @dataclass(frozen=True, slots=True)
 class Template:
@@ -92,20 +100,20 @@ class Template:
         return amount
 
 
-scholarship= Decimal('52367')
-t=Template(
-    payments=[
-        Fix(Decimal('1320'), description="за проезд"),
-        Fix(Decimal('5790'), description="за тариф"),
-        Fix(Decimal('5000'), description="сестренке"),
-        Fix(Decimal('28000'), description="на все про все"),
-        Fix(Decimal('12257'), description="самоналог"),
-    ])
-scholarship=t.apply(scholarship)
-print(scholarship)
-
-for i in t.payments:
-    print(i)
+# scholarship= Decimal('52367')
+# t=Template(
+#     payments=[
+#         Fix(Decimal('1320'), description="за проезд"),
+#         Fix(Decimal('5790'), description="за тариф"),
+#         Fix(Decimal('5000'), description="сестренке"),
+#         Fix(Decimal('28000'), description="на все про все"),
+#         Fix(Decimal('12257'), description="самоналог"),
+#     ])
+# scholarship=t.apply(scholarship)
+# print(scholarship)
+#
+# for i in t.payments:
+#     print(i)
 
 # money= Decimal('52000')
 # t = Template(
@@ -122,20 +130,25 @@ for i in t.payments:
 # print(money)
 # print(t.name)
 # print(t.payments[1].description)
-#
-# money_for_bank=Decimal('111.8998')
-# b= Bank(
-#     name="Lada",
-#     target_scale=Decimal('45000'),
-#     description="Once i have a dream that one day ill move w niggas to diff cities"
-# )
 
-# money_for_bank=b.add_money(money_for_bank)
-# print(money_for_bank)
-# print(b.description)
-# print(b.amount)
-# print(b.is_target_success())
-#
-# m1=Decimal('123.17658857')
-# money_for_bank=b.add_money(m1)
-# print(b.amount)
+money_for_bank=Decimal('111.8998')
+b= Bank(
+    name="Lada",
+    target_scale=Decimal('45000'),
+    description="Once i have a dream that one day ill move w niggas to diff cities"
+)
+
+c=Bank(
+    name="111111Lada",
+    target_scale=Decimal('45000'),
+    description="Once i have a dream that one day ill move w niggas to diff cities"
+)
+money_for_bank=b.add_money(money_for_bank)
+print(money_for_bank)
+print(b.description)
+print(b.amount)
+print(b.is_target_success())
+
+m1=Decimal('123.17658857')
+money_for_bank=b.add_money(m1)
+print(b.amount)
