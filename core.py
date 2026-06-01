@@ -90,9 +90,10 @@ class Template:
     payments: list[Fix | Percentage] = field(default_factory=list)
     name: str = field(default="Шаблон")
 
-    def __post_init__(self) -> None:
-        if not self.payments:
-            raise ValueError("Payments list cannot be empty")
+    # мешает для append, вроде некритично если шаблон пустой
+    # def __post_init__(self) -> None:
+    #     if not self.payments:
+    #         raise ValueError("Payments list cannot be empty")
 
     def apply(self, amount: Decimal) -> Decimal:
         for payment in self.payments:
@@ -100,20 +101,27 @@ class Template:
         return amount
 
 
-scholarship= Decimal('32815')
-t=Template(
-    payments=[
-        Fix(Decimal('1320'), description="за проезд"),
-        Fix(Decimal('5790'), description="за тариф"),
-        Fix(Decimal('5000'), description="сестренке"),
-        Fix(Decimal('28000'), description="на все про все"),
-        Fix(Decimal('12257'), description="самоналог"),
-    ])
-scholarship=t.apply(scholarship)
-print(scholarship)
 
-for i in t.payments:
-    print(i)
+test=Template()
+test.payments.append(Fix(Decimal('1320'), description="за проезд"))
+print(test)
+
+# scholarship= Decimal('32815')
+# t=Template(
+    # payments=[
+    #     Fix(Decimal('1320'), description="за проезд"),
+    #     Fix(Decimal('5790'), description="за тариф"),
+    #     Fix(Decimal('5000'), description="сестренке"),
+    #     Fix(Decimal('28000'), description="на все про все"),
+    #     Fix(Decimal('12257'), description="самоналог"),
+    # ]
+    #   )
+
+# scholarship=t.apply(scholarship)
+# print(scholarship)
+
+# for i in t.payments:
+#     print(i)
 
 # money= Decimal('52000')
 # t = Template(
