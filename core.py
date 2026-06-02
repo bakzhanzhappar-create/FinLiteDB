@@ -102,9 +102,9 @@ class Template:
 
 
 
-test=Template()
-test.payments.append(Fix(Decimal('1320'), description="за проезд"))
-print(test)
+# test=Template()
+# test.payments.append(Fix(Decimal('1320'), description="за проезд"))
+# print(test)
 
 # scholarship= Decimal('32815')
 # t=Template(
