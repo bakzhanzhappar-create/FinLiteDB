@@ -77,9 +77,10 @@ class Validator:
     value: str | Decimal
     target_type: type = Decimal
 
-    def __post_init__(self) -> None:
+    def __post_init__(self) -> Decimal:
         try:
-            self.value=self.target_type(self.value)
+            correct_value=self.value=self.target_type(self.value)
+            return correct_value
         except TypeError:
             raise InvalidTypeError(f" {self.value} тут есть некорректный символ")
 
