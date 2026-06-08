@@ -1,4 +1,4 @@
-from core import Template, Validator, Percentage, Fix
+from core import Template, Validator, Percentage, Fix, Bank
 from decimal import Decimal
 
 
@@ -24,6 +24,8 @@ def ask_amount():
     checked=Validator(value)
     return checked.value
 
+def fulfill_bank():
+
 while True:
     testing = str(input("ввод: "))
     if testing=="add template ":
@@ -47,30 +49,18 @@ while True:
         use_amount=ask_amount()
         result=test.apply(use_amount)
         print(result)
+
+    if testing == "add bank ":
+        works()
+        bank_test = Bank()
+
+    if testing == "show bank ":
+        works()
+        print(bank_test)
+
+    if testing== "fulfill bank ":
+        works()
+
     if testing=="exit":
         works()
         break
-# C:\Users\baga\AppData\Local\Programs\Python\Python314\python.exe C:\Users\baga\PycharmProjects\FinLiteDB\main.py
-# ввод: add template
-# works!
-# ввод: add fix
-# works!
-# ввод суммы фиксированного 1200
-# Дайте описание nigga
-# ввод: execute template
-# works!
-# Введите сумму для обработки 54200
-# Traceback (most recent call last):
-#   File "C:\Users\baga\PycharmProjects\FinLiteDB\main.py", line 47, in <module>
-#     ask_amount()
-#     ~~~~~~~~~~^^
-#   File "C:\Users\baga\PycharmProjects\FinLiteDB\main.py", line 25, in ask_amount
-#     value=test.apply(value)
-#   File "C:\Users\baga\PycharmProjects\FinLiteDB\core.py", line 100, in apply
-#     amount = payment.apply(amount)
-#   File "C:\Users\baga\PycharmProjects\FinLiteDB\core.py", line 43, in apply
-#     return amount - self.value
-#            ~~~~~~~^~~~~~~~~~~~
-# TypeError: unsupported operand type(s) for -: 'str' and 'decimal.Decimal'
-#
-# Process finished with exit code 1
