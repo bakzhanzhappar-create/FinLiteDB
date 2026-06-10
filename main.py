@@ -25,6 +25,9 @@ def ask_amount():
     return checked.value
 
 def fulfill_bank():
+    name: str=input("Введите название для банка: ")
+    target_scale=ask_amount()
+    description: str=input("Что вы хотите записать по поводу этого банка?: ")
 
 while True:
     testing = str(input("ввод: "))
@@ -58,7 +61,12 @@ while True:
         works()
         print(bank_test)
 
-    if testing== "fulfill bank ":
+    if testing == "fulfill bank ":
+        works()
+        fulfill_bank()
+
+    if testing == "money to bank ":
+        bank_test.addmoney(amount=ask_amount())
         works()
 
     if testing=="exit":
