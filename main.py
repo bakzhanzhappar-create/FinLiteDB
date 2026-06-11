@@ -1,6 +1,6 @@
 from core import Template, Validator, Percentage, Fix, Bank
 from decimal import Decimal
-
+from storage import save_to_json
 
 def works():
     print("works!")
@@ -32,38 +32,38 @@ def fulfill_bank():
 while True:
     testing = str(input("ввод: "))
     if testing=="add template ":
-        works()
         test=Template()
+        works()
 
     if testing=="add percentage ":
-        works()
         add_percentage()
+        works()
 
     if testing=="add fix ":
-        works()
         add_fix()
+        works()
 
     if testing=="show template ":
-        works()
         print(test)
+        works()
 
     if testing=="execute template ":
-        works()
         use_amount=ask_amount()
         result=test.apply(use_amount)
+        works()
         print(result)
 
     if testing == "add bank ":
-        works()
         bank_test = Bank()
+        works()
 
     if testing == "show bank ":
-        works()
         print(bank_test)
+        works()
 
     if testing == "fulfill bank ":
-        works()
         fulfill_bank()
+        works()
 
     if testing == "money to bank ":
         bank_test.add_money(ask_amount())
@@ -72,6 +72,20 @@ while True:
         else:
             print(f"U nigga close to the target there left {bank_test.target_scale - bank_test.amount} to the target for {bank_test.description}!")
         works()
+
+    if testing == "save template to json":
+        save_to_json(test)
+        if save_to_json(test) == True:
+            works()
+        else:
+            print("something went wrong")
+
+    if testing == "save bank to json":
+        save_to_json(bank_test)
+        if save_to_json(bank_test) == True:
+            works()
+        else:
+            print("something went wrong")
 
     if testing=="exit":
         works()
