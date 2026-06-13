@@ -1,6 +1,6 @@
 from core import Template, Validator, Percentage, Fix, Bank
 from decimal import Decimal
-from storage import unpack_template, unpack_bank
+from storage import packing_template, packing_bank
 
 def works():
     print("works!")
@@ -92,16 +92,16 @@ while True:
         works()
 
     if testing == "save template to json":
-        unpack_template(test)
+        packing_template(test)
 
     if testing == "save bank to json":
-        unpack_bank(bank_test)
+        packing_bank(bank_test)
 
     if testing=="auto template":
-        auto_template()
+        test=auto_template()
 
     if testing=="auto bank":
-        auto_bank()
+        bank_test=auto_bank()
 
     if testing=="exit":
         works()
