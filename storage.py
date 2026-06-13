@@ -1,9 +1,19 @@
-import json
+# import json
+from dataclasses import asdict
+# def save_to_json(to_user_file):
+#     with open("user_file.json", mode='w', encoding="utf-8") as user_file:
+#         json.dump(to_user_file, user_file, ensure_ascii=False, indent=4)
+#         return True
 
-def save_to_json(to_user_file):
-    with open("user_file.json", mode='w', encoding="utf-8") as user_file:
-        json.dump(to_user_file, user_file, ensure_ascii=False, indent=4)
-        return True
+def unpack_template(test):
+    print("Unpacking template")
+    print(asdict(test))
+    print(type(test))
+
+def unpack_bank(bank_test):
+    print("Unpacking bank")
+    print(asdict(bank_test))
+    print(type(bank_test))
 
 # ввод: add template
 # works!

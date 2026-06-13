@@ -1,9 +1,27 @@
 from core import Template, Validator, Percentage, Fix, Bank
 from decimal import Decimal
-from storage import save_to_json
+from storage import unpack_template, unpack_bank
 
 def works():
     print("works!")
+
+def auto_template():
+    test=Template(
+        payments=[
+        Fix(Decimal('10000'), "coca cola"),
+        Fix(Decimal('20000')),
+        Fix(Decimal('1000')),
+        Percentage(value=Decimal('30'))])
+    works()
+    return test
+
+def auto_bank():
+    bank_test=Bank(
+        name="Lada",
+        target_scale=Decimal('45000'),
+        description="Once i have a dream that one day ill move w niggas to diff cities")
+    works()
+    return bank_test
 
 
 def add_percentage():
@@ -74,18 +92,16 @@ while True:
         works()
 
     if testing == "save template to json":
-        save_to_json(test)
-        if save_to_json(test) == True:
-            works()
-        else:
-            print("something went wrong")
+        unpack_template(test)
 
     if testing == "save bank to json":
-        save_to_json(bank_test)
-        if save_to_json(bank_test) == True:
-            works()
-        else:
-            print("something went wrong")
+        unpack_bank(bank_test)
+
+    if testing=="auto template":
+        auto_template()
+
+    if testing=="auto bank":
+        auto_bank()
 
     if testing=="exit":
         works()
