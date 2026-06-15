@@ -92,10 +92,10 @@ while True:
         works()
 
     if testing == "save template to json":
-        packing_template(test)
+        packing_to_json(test)
 
     if testing == "save bank to json":
-        packing_bank(bank_test)
+        packing_to_json(bank_test)
 
     if testing=="auto template":
         test=auto_template()
