@@ -1,9 +1,11 @@
 from core import Template, Validator, Percentage, Fix, Bank
 from decimal import Decimal
-from storage import packing_template, packing_bank
+from storage import packing_from_json, packing_to_json
+
 
 def works():
     print("works!")
+
 
 def auto_template():
     test=Template(
@@ -11,7 +13,8 @@ def auto_template():
         Fix(Decimal('10000'), "coca cola"),
         Fix(Decimal('20000')),
         Fix(Decimal('1000')),
-        Percentage(value=Decimal('30'))])
+        Percentage(value=Decimal('30'))],
+        name="Niggasaki")
     works()
     return test
 
@@ -37,15 +40,18 @@ def add_fix():
     test.payments.append(Fix(Decimal(f'{values}'), description=desc))
     return True
 
+
 def ask_amount():
     value: str = input("Введите сумму для обработки ")
     checked=Validator(value)
     return checked.value
 
+
 def fulfill_bank():
     bank_test.name= str(input("Введите название для банка: "))
     bank_test.target_scale=ask_amount()
     bank_test.description= str(input("Что вы хотите записать по поводу этого банка?: "))
+
 
 while True:
     testing = str(input("ввод: "))
@@ -102,6 +108,16 @@ while True:
 
     if testing=="auto bank":
         bank_test=auto_bank()
+
+    if testing=="from json template":
+        from_file=Template(packing_from_json())
+        works()
+        print(from_file)
+
+    if testing=="from json bank":
+        from_file=Bank(packing_to_json())
+        works()
+        print(from_file)
 
     if testing=="exit":
         works()

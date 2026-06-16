@@ -88,8 +88,8 @@ class Validator:
 @dataclass(frozen=True, slots=True)
 class Template:
 
-    payments: list[Fix | Percentage] = field(default_factory=list)
     name: str = field(default="Шаблон")
+    payments: list[Fix | Percentage] = field(default_factory=list)
 
     # мешает для append, вроде некритично если шаблон пустой
     # def __post_init__(self) -> None:
