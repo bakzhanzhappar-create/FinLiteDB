@@ -1,7 +1,8 @@
 from core import Template, Validator, Percentage, Fix, Bank
 from decimal import Decimal
 from storage import packing_from_json, packing_to_json
-
+#потом удали библиотеку датаклассов
+from dataclasses import asdict
 
 def works():
     print("works!")
@@ -118,6 +119,20 @@ while True:
         from_file=Bank(packing_to_json())
         works()
         print(from_file)
+
+    if testing =="type test":
+        fix_type=list(filter(lambda obj: isinstance(obj, Fix), test.payments))
+        percentage_type=list(filter(lambda obj: isinstance(obj, Percentage), test.payments))
+
+        print(fix_type)
+        print(percentage_type)
+
+        packed=asdict(test)
+
+
+
+        print(packed)
+        works()
 
     if testing=="exit":
         works()

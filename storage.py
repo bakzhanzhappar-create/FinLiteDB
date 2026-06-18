@@ -54,7 +54,7 @@ def read():
 def packing_to_json(test):
     print("Unpacking template")
     packed=asdict(test)
-    print("CONVERTING TO JSON ...")
+    print("CONVERTING TO JSON... ")
     check_write(packed)
     print("done")
 
