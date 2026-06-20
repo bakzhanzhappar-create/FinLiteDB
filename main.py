@@ -110,28 +110,31 @@ while True:
     if testing=="auto bank":
         bank_test=auto_bank()
 
-    if testing=="from json template":
-        from_file=Template(packing_from_json())
+    if testing == "from json template":
+        test = packing_from_json()
         works()
-        print(from_file)
+        print(test)
+
 
     if testing=="from json bank":
         from_file=Bank(packing_to_json())
         works()
         print(from_file)
 
+
+
+
     if testing =="type test":
-        fix_type=list(filter(lambda obj: isinstance(obj, Fix), test.payments))
-        percentage_type=list(filter(lambda obj: isinstance(obj, Percentage), test.payments))
-
-        print(fix_type)
-        print(percentage_type)
-
         packed=asdict(test)
 
-
+        for packed_type, packed_data in zip(test.payments, packed['payments']):
+            packed_data['__type__'] = type(packed_type).__name__
 
         print(packed)
+        print("-------------------------")
+        print(packed_type)
+        print("-------------------------")
+        print(packed_data)
         works()
 
     if testing=="exit":
