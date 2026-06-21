@@ -65,7 +65,9 @@ def packing_to_json(test):
 
     json_write(from_json)
     print("done")
-
+    
+def get_available_templates() -> list[str]:
+    return [template_name for template in templates_list if (template_name := template.get("name")) is not None]
 
 def packing_from_json(target_name):
     print("Reading files... ")
