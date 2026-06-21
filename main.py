@@ -110,33 +110,9 @@ while True:
     if testing=="auto bank":
         bank_test=auto_bank()
 
-    if testing == "from json template":
-        test = packing_from_json()
+    if testing=="json check":
+        test=packing_from_json()
         works()
-        print(test)
-
-
-    if testing=="from json bank":
-        from_file=Bank(packing_to_json())
-        works()
-        print(from_file)
-
-
-
-
-    if testing =="type test":
-        packed=asdict(test)
-
-        for packed_type, packed_data in zip(test.payments, packed['payments']):
-            packed_data['__type__'] = type(packed_type).__name__
-
-        print(packed)
-        print("-------------------------")
-        print(packed_type)
-        print("-------------------------")
-        print(packed_data)
-        works()
-
     if testing=="exit":
         works()
         break
