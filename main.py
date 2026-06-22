@@ -111,7 +111,9 @@ while True:
         bank_test=auto_bank()
 
     if testing=="json check":
-        test=packing_from_json()
+        name=input("ask something nigga ")
+        test=packing_from_json(name)
+
         works()
     if testing=="exit":
         works()

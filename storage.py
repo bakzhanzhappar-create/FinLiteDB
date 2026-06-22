@@ -77,7 +77,7 @@ def packing_from_json(target_name):
         raise FileNotFoundError(f"File doesnt exist")
 
     # Показываем пользователю, какие шаблоны у нас вообще есть в базе
-    print("\nДоступные шаблоны:")
+
     for exist_list in templates_list:
         print(f"- {exist_list.get('name')}")
 
@@ -89,7 +89,7 @@ def packing_from_json(target_name):
             break
 
     if target_template is None:
-        raise FileNotFoundError(f"Ur asked {target_template} doesnt exist")
+        raise FileNotFoundError(f"Ur asked {target_name} doesnt exist")
 
     cleaned_payments = list()
 
@@ -112,3 +112,6 @@ def packing_from_json(target_name):
         cleaned_payments.append(obj)
 
     return Template(name=target_template.get('name', 'Шаблон'), payments=cleaned_payments)
+
+def get_available_templates() -> list[str]:
+    return [template_name for template in templates_list if (template_name := template.get("name")) is not None]
