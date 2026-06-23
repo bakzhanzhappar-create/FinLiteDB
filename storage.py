@@ -3,6 +3,8 @@ from dataclasses import asdict
 from decimal import Decimal
 from core import Template, Validator, Fix, Percentage
 
+class NotFoundError(Exception):
+    ...
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -69,17 +71,7 @@ def packing_to_json(test):
 
 def packing_from_json(target_name):
     print("Reading files... ")
-    from_json = json_read()
-
-    templates_list = from_json.get('templates', list())
-
-    if not templates_list:
-        raise FileNotFoundError(f"File doesnt exist")
-
-    # Показываем пользователю, какие шаблоны у нас вообще есть в базе
-
-    for exist_list in templates_list:
-        print(f"- {exist_list.get('name')}")
+    templates_list = json_read().get('templates', list())
 
     target_template = None
 
@@ -89,7 +81,7 @@ def packing_from_json(target_name):
             break
 
     if target_template is None:
-        raise FileNotFoundError(f"Ur asked {target_name} doesnt exist")
+        raise NotFoundError(f"Ur asked {target_name} doesnt exist")
 
     cleaned_payments = list()
 
@@ -113,5 +105,33 @@ def packing_from_json(target_name):
 
     return Template(name=target_template.get('name', 'Шаблон'), payments=cleaned_payments)
 
-def get_available_templates() -> list[str]:
-    return [template_name for template in templates_list if (template_name := template.get("name")) is not None]
+
+def json_list():
+    templates_list = json_read().get('templates', list())
+    banks_list = json_read().get('banks', list())
+
+    if not templates_list or not banks_list:
+        raise NotFoundError(f"File doesnt exist")
+
+    for exist_list in templates_list:
+        print(f"- Шаблоны: {exist_list.get('name')}")
+
+    for exist_list in banks_list:
+        print(f"- Банки: {exist_list.get('name')}")
+
+
+def chernovik_banka(target_name):
+    banks_list=json_read().get('banks', list())
+
+    target_bank = None
+
+    for bank in banks_list:
+        if bank.get('name') == target_name:
+            target_bank = bank
+            break
+
+    if target_bank is None:
+        raise NotFoundError(f"Ur asked {target_name} doesnt exist")
+
+    for bank_dict in banks_list:
+

@@ -1,8 +1,6 @@
 from core import Template, Validator, Percentage, Fix, Bank
 from decimal import Decimal
-from storage import packing_from_json, packing_to_json
-#потом удали библиотеку датаклассов
-from dataclasses import asdict
+from storage import packing_from_json, packing_to_json, json_list
 
 def works():
     print("works!")
@@ -111,6 +109,7 @@ while True:
         bank_test=auto_bank()
 
     if testing=="json check":
+        json_list()
         name=input("ask something nigga ")
         test=packing_from_json(name)
 
