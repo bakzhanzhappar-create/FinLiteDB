@@ -1,7 +1,8 @@
 import json
 from dataclasses import asdict
 from decimal import Decimal
-from core import Template, Validator, Fix, Percentage
+from core import Template, Validator, Fix, Percentage, Bank
+
 
 class NotFoundError(Exception):
     ...
@@ -135,3 +136,13 @@ def chernovik_banka(target_name):
 
     for bank_dict in banks_list:
 
+        raw_amount = bank_dict['amount']
+        raw_target_scale= bank_dict['target_scale']
+
+        cleaned_amount = Validator(value=raw_amount, target_type=Decimal)
+        cleaned_target_scale = Validator(value=raw_target_scale, target_type=Decimal)
+
+        decimal_amount = cleaned_amount.value
+        decimal_target_scale = cleaned_target_scale.value
+
+    return Bank(name=bank_dict.get('name'), amount=decimal_amount, target_scale=decimal_target_scale, description=bank_dict.get('description'))

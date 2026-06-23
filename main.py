@@ -1,6 +1,6 @@
 from core import Template, Validator, Percentage, Fix, Bank
 from decimal import Decimal
-from storage import packing_from_json, packing_to_json, json_list
+from storage import packing_from_json, packing_to_json, json_list, chernovik_banka
 
 def works():
     print("works!")
@@ -111,7 +111,7 @@ while True:
     if testing=="json check":
         json_list()
         name=input("ask something nigga ")
-        test=packing_from_json(name)
+        bank_test=chernovik_banka(name)
 
         works()
     if testing=="exit":
