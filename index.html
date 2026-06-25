@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard — Finlite DB</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Базовые стили и супер-плавный переход для всего документа */
+        * {
+            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                        color 0.4s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ТЕМНАЯ ТЕМА (По умолчанию) */
+        body.theme-dark {
+            background-color: #0d120f;
+            color: #f4f4f0;
+        }
+        .theme-dark .glow-bg {
+            background:
+                radial-gradient(circle at 20% 20%, rgba(16, 44, 25, 0.8) 0%, transparent 40%),
+                radial-gradient(circle at 80% 40%, rgba(163, 230, 53, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(245, 245, 220, 0.08) 0%, transparent 60%);
+        }
+        .theme-dark .glass-card {
+            background: rgba(20, 29, 24, 0.6);
+            border: 1px solid rgba(163, 230, 53, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .theme-dark .glass-card:hover {
+            border-color: rgba(163, 230, 53, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(163, 230, 53, 0.1);
+        }
+        .theme-dark .input-dark {
+            background-color: #141d18;
+            border-color: rgba(63, 63, 70, 1);
+            color: #e4e4e7;
+        }
+        .theme-dark .text-muted { color: #a8a29e; }
+        .theme-dark .text-title { color: #e7e5e4; }
+
+        /* СВЕТЛАЯ ТЕМА (Благородный молочно-оливковый) */
+        body.theme-light {
+            background-color: #fcfbf7;
+            color: #1c241f;
+        }
+        .theme-light .glow-bg {
+            background:
+                radial-gradient(circle at 20% 20%, rgba(217, 249, 157, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 40%, rgba(204, 251, 241, 0.3) 0%, transparent 50%);
+        }
+        .theme-light .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(22, 58, 33, 0.12);
+            box-shadow: 0 8px 32px 0 rgba(22, 58, 33, 0.04);
+        }
+        .theme-light .glass-card:hover {
+            border-color: rgba(77, 124, 15, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(77, 124, 15, 0.08);
+        }
+        .theme-light .input-dark {
+            background-color: #f4f3ee;
+            border-color: rgba(212, 212, 216, 1);
+            color: #1c241f;
+        }
+        .theme-light .input-dark:focus {
+            border-color: #4d7c0f;
+        }
+        .theme-light .text-muted { color: #71717a; }
+        .theme-light .text-title { color: #1c241f; }
+
+        /* Общие акценты */
+        .accent-lime { color: #a3e635; }
+        .theme-light .accent-lime { color: #4d7c0f; } /* Чуть темнее для читаемости на светлом */
+
+        .glow-bg {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 150%;
+            height: 150%;
+            z-index: -1;
+            filter: blur(80px);
+            transition: background 0.8s ease-in-out;
+        }
+
+        .glass-card {
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s ease, border-color 0.5s ease, background-color 0.6s ease, box-shadow 0.6s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #163a21 0%, #a3e635 100%);
+            color: #0d120f;
+            font-weight: 600;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .theme-light .btn-gradient {
+            background: linear-gradient(135deg, #4d7c0f 0%, #a3e635 100%);
+            color: #ffffff;
+        }
+        .btn-gradient:hover { opacity: 0.9; }
+        .btn-gradient:active { transform: scale(0.98); }
+
+        .input-dark {
+            width: 100%;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            transition: border-color 0.2s, background-color 0.6s, color 0.4s;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: #a3e635;
+        }
+    </style>
+</head>
+<body class="theme-dark relative min-h-screen pb-12">
+
+    <div class="glow-bg"></div>
+
+    <nav class="w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center border-b border-zinc-800/40">
+        <div class="flex items-center gap-2">
+            <div class="w-4 h-4 rounded-full bg-lime-400 animate-pulse"></div>
+            <span class="text-xl font-bold tracking-wider text-title">Finlite <span class="accent-lime">DB</span></span>
+        </div>
+        <div class="flex items-center gap-6 text-sm">
+            <button onclick="switchTab('templates-page')" id="btn-templates" class="text-lime-400 font-semibold cursor-pointer transition">Шаблоны</button>
+            <button onclick="switchTab('banks-page')" id="btn-banks" class="text-muted hover:text-lime-400 cursor-pointer transition">Банки (Копилки)</button>
+
+            <button onclick="toggleTheme()" class="ml-2 p-2 rounded-xl bg-zinc-800/20 hover:bg-zinc-800/50 cursor-pointer text-lg transition" title="Сменить тему">
+                🌗
+            </button>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-6xl mx-auto px-6 mt-8">
+
+        <div id="templates-page" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <section class="lg:col-span-2 flex flex-col gap-6">
+                <div>
+                    <h2 class="text-2xl font-bold mb-1 tracking-tight text-title flex items-center gap-2">
+                        <span class="accent-lime">■</span> Активный шаблон: <span class="font-medium text-muted">Стипендия</span>
+                    </h2>
+                    <p class="text-xs text-muted mb-4">Список всех запланированных вычетов и правил распределения внутри шаблона</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-card p-5 rounded-2xl flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-muted"> Фиксированный</p>
+                            <h4 class="font-semibold text-title mt-1">За проезд</h4>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-bold text-rose-500">-1 320 ₸</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-muted"> Фиксированный</p>
+                            <h4 class="font-semibold text-title mt-1">На все про все</h4>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-bold text-rose-500">-28 000 ₸</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl flex justify-between items-center border-l-2 border-l-lime-400">
+                        <div>
+                            <p class="text-xs accent-lime"> Процентный</p>
+                            <h4 class="font-semibold text-title mt-1">Самоналог</h4>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-bold accent-lime">30%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl mt-4 max-w-md">
+                    <h3 class="text-md font-semibold text-title mb-3">  Запустить расчёт по шаблону</h3>
+                    <div class="flex gap-3">
+                        <input type="number" placeholder="Введите сумму" class="input-dark">
+                        <button class="btn-gradient px-6 rounded-xl cursor-pointer whitespace-nowrap">Рассчитать</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lg:col-span-1">
+                <div class="glass-card p-6 rounded-2xl sticky top-6">
+                    <h2 class="text-xl font-bold mb-4 text-title flex items-center gap-2">
+                        <span></span> Создать элемент
+                    </h2>
+
+                    <form class="flex flex-col gap-4" onsubmit="event.preventDefault();">
+                        <div>
+                            <label class="block text-xs text-muted mb-1">Название платежа / цели</label>
+                            <input type="text" placeholder="Например: Аренда" class="input-dark">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-muted mb-1">Тип отчисления</label>
+                            <select class="input-dark" id="payment-type" onchange="toggleTemplateFields()">
+                                <option value="fix">Фиксированный (Fix сумма)</option>
+                                <option value="percent">Процентный (% от дохода)</option>
+                            </select>
+                        </div>
+
+                        <div id="fix-amount-block">
+                            <label class="block text-xs text-muted mb-1">Сумма платежа</label>
+                            <input type="number" placeholder="5000" class="input-dark">
+                        </div>
+
+                        <div id="percent-amount-block" class="hidden">
+                            <label class="block text-xs text-muted mb-1">Процент от распределения</label>
+                            <div class="relative">
+                                <input type="number" placeholder="15" class="input-dark pr-8">
+                                <span class="absolute right-4 top-3 text-stone-500">%</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full btn-gradient py-3 rounded-xl cursor-pointer mt-2">
+                            ➕ Добавить в шаблон
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <div id="banks-page" class="tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <section class="lg:col-span-2 flex flex-col gap-6">
+                <div>
+                    <h2 class="text-2xl font-bold mb-1 tracking-tight text-title flex items-center gap-2">
+                        <span class="accent-lime">■</span> Активные Банки (Копилки)
+                    </h2>
+                    <p class="text-xs text-muted mb-4">Ваши финансовые цели и прогресс накоплений</p>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-lime-950/30 text-lime-400 theme-light:bg-lime-100 theme-light:text-lime-700 text-xs px-2.5 py-1 rounded-full font-medium border border-lime-800/30">Цель: Lada</span>
+                                <p class="text-xs text-muted mt-3 max-w-md italic">
+                                    "Once i have a dream that one day ill move w niggas to diff cities"
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-muted">Собрано</p>
+                                <p class="text-2xl font-black text-title">7 633 <span class="text-xs font-normal text-muted">/ 45 000</span></p>
+                            </div>
+                        </div>
+
+                        <div class="w-full bg-zinc-800/20 h-3 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
+                            <div class="h-full rounded-full" style="width: 17%; background: linear-gradient(90deg, #163a21 0%, #a3e635 100%);"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center mt-3 text-xs text-muted">
+                            <span>Прогресс: 17%</span>
+                            <span>Осталось: 37 367</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lg:col-span-1">
+                <div class="glass-card p-6 rounded-2xl sticky top-6">
+                    <h2 class="text-xl font-bold mb-4 text-title flex items-center gap-2">
+                        <span></span> Создать новый Банк
+                    </h2>
+
+                    <form class="flex flex-col gap-4" onsubmit="event.preventDefault();">
+                        <div>
+                            <label class="block text-xs text-muted mb-1">Название банка (Цель)</label>
+                            <input type="text" placeholder="Например: Новый ПК" class="input-dark">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-muted mb-1">Целевая сумма накопления</label>
+                            <input type="number" placeholder="45000" class="input-dark">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-muted mb-1">Мотивирующая цитата</label>
+                            <textarea placeholder="Once i have a dream..." class="input-dark h-20 resize-none"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full btn-gradient py-3 rounded-xl cursor-pointer mt-2">
+                             Открыть счет
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        // Переключение тем с сохранением плавности
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('theme-dark')) {
+                body.classList.remove('theme-dark');
+                body.classList.add('theme-light');
+            } else {
+                body.classList.remove('theme-light');
+                body.classList.add('theme-dark');
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            document.getElementById('btn-templates').classList.remove('text-lime-400', 'font-semibold');
+            document.getElementById('btn-banks').classList.remove('text-lime-400', 'font-semibold');
+            document.getElementById('btn-templates').classList.add('text-muted');
+            document.getElementById('btn-banks').classList.add('text-muted');
+
+            const activeBtn = tabId === 'templates-page' ? 'btn-templates' : 'btn-banks';
+            document.getElementById(activeBtn).classList.remove('text-muted');
+            document.getElementById(activeBtn).classList.add('text-lime-400', 'font-semibold');
+        }
+
+        function toggleTemplateFields() {
+            const type = document.getElementById('payment-type').value;
+            document.getElementById('fix-amount-block').classList.toggle('hidden', type !== 'fix');
+            document.getElementById('percent-amount-block').classList.toggle('hidden', type !== 'percent');
+        }
+    </script>
+</body>
+</html>

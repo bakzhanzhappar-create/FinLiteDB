@@ -70,7 +70,7 @@ def packing_to_json(test):
     print("done")
 
 
-def packing_from_json(target_name):
+def template_from_json(target_name):
     print("Reading files... ")
     templates_list = json_read().get('templates', list())
 
@@ -121,7 +121,7 @@ def json_list():
         print(f"- Банки: {exist_list.get('name')}")
 
 
-def chernovik_banka(target_name):
+def bank_from_json(target_name):
     banks_list=json_read().get('banks', list())
 
     target_bank = None

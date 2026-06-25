@@ -1,119 +1,47 @@
-from core import Template, Validator, Percentage, Fix, Bank
-from decimal import Decimal
-from storage import packing_from_json, packing_to_json, json_list, chernovik_banka
-
-def works():
-    print("works!")
+from pydantic import BaseModel
+from typing import Optional, List, Dict
 
 
-def auto_template():
-    test=Template(
-        payments=[
-        Fix(Decimal('10000'), "coca cola"),
-        Fix(Decimal('20000')),
-        Fix(Decimal('1000')),
-        Percentage(value=Decimal('30'))],
-        name="Niggasaki")
-    works()
-    return test
-
-def auto_bank():
-    bank_test=Bank(
-        name="Lada",
-        target_scale=Decimal('45000'),
-        description="Once i have a dream that one day ill move w niggas to diff cities")
-    works()
-    return bank_test
+# 1. Схемы данных (Валидация входящих запросов)
+class TemplateItemIn(BaseModel):
+    template_name: str
+    item_name: str
+    type: str  # "fix" или "percent"
+    value: float
 
 
-def add_percentage():
-    values: Decimal = (input("ввод суммы процента "))
-    desc: str = input("Дайте описание ")
-    test.payments.append(Percentage(Decimal(f'{values}'), description=desc))
-    return True
+class BankCreateIn(BaseModel):
+    name: str
+    target_scale: float
+    description: Optional[str] = ""
 
 
-def add_fix():
-    values: Decimal = (input("ввод суммы фиксированного "))
-    desc: str = input("Дайте описание ")
-    test.payments.append(Fix(Decimal(f'{values}'), description=desc))
-    return True
+class TemplateExecIn(BaseModel):
+    template_name: str
+    amount: float
 
 
-def ask_amount():
-    value: str = input("Введите сумму для обработки ")
-    checked=Validator(value)
-    return checked.value
+class BankDepositIn(BaseModel):
+    bank_name: str
+    amount: float
 
 
-def fulfill_bank():
-    bank_test.name= str(input("Введите название для банка: "))
-    bank_test.target_scale=ask_amount()
-    bank_test.description= str(input("Что вы хотите записать по поводу этого банка?: "))
+# 2. Бизнес-логика калькулятора (Твоя "золотая формула")
+def calculate_template(amount: float, items: List[Dict]) -> float:
+    """
+    Просчитывает остаток по правилам активного шаблона.
+    Сначала вычитает все фиксированные платежи, затем проценты от исходной суммы.
+    """
+    current_balance = amount
 
+    # Шаг 1: Минусуем фиксы
+    for item in items:
+        if item.get("type") == "fix":
+            current_balance -= item.get("value", 0)
 
-while True:
-    testing = str(input("ввод: "))
-    if testing=="add template ":
-        test=Template()
-        works()
+    # Шаг 2: Минусуем проценты от базового дохода
+    for item in items:
+        if item.get("type") == "percent":
+            current_balance -= (amount * (item.get("value", 0) / 100))
 
-    if testing=="add percentage ":
-        add_percentage()
-        works()
-
-    if testing=="add fix ":
-        add_fix()
-        works()
-
-    if testing=="show template ":
-        print(test)
-        works()
-
-    if testing=="execute template ":
-        use_amount=ask_amount()
-        result=test.apply(use_amount)
-        works()
-        print(result)
-
-    if testing == "add bank ":
-        bank_test = Bank()
-        works()
-
-    if testing == "show bank ":
-        print(bank_test)
-        works()
-
-    if testing == "fulfill bank ":
-        fulfill_bank()
-        works()
-
-    if testing == "money to bank ":
-        bank_test.add_money(ask_amount())
-        if bank_test.is_target_success() == True:
-            print("we have enough money")
-        else:
-            print(f"U nigga close to the target there left {bank_test.target_scale - bank_test.amount} to the target for {bank_test.description}!")
-        works()
-
-    if testing == "save template to json":
-        packing_to_json(test)
-
-    if testing == "save bank to json":
-        packing_to_json(bank_test)
-
-    if testing=="auto template":
-        test=auto_template()
-
-    if testing=="auto bank":
-        bank_test=auto_bank()
-
-    if testing=="json check":
-        json_list()
-        name=input("ask something nigga ")
-        bank_test=chernovik_banka(name)
-
-        works()
-    if testing=="exit":
-        works()
-        break
+    return current_balance
