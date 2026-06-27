@@ -6,7 +6,6 @@
     <title>Finance Dashboard — Finlite DB</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* Оригинальный неоновый минималистичный дизайн */
         * {
             transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                         border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
@@ -125,7 +124,6 @@
 
     <div class="glow-bg"></div>
 
-    <!-- НАВИГАЦИЯ -->
     <nav class="w-full max-w-6xl mx-auto px-6 py-6 flex justify-between items-center border-b border-zinc-800/40">
         <div class="flex items-center gap-2">
             <div class="w-4 h-4 rounded-full bg-lime-400 animate-pulse"></div>
@@ -143,54 +141,15 @@
 
     <main class="w-full max-w-6xl mx-auto px-6 mt-8">
 
-        <!-- СТРАНИЦА ШАБЛОНОВ -->
         <div id="templates-page" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <section class="lg:col-span-2 flex flex-col gap-12">
-                <div class="flex flex-col gap-6">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-800/50 pb-4 gap-4">
-                        <div>
-                            <h2 class="text-2xl font-bold tracking-tight text-title flex items-center gap-2">
-                                <span class="accent-lime"></span> Текущие Шаблоны
-                            </h2>
-                            <p class="text-xs text-muted mt-0.5">Правила обрабатываются строго по принципу FIFO (сверху вниз)</p>
-                        </div>
-                    </div>
-
-                    <!-- Статичный пример из исходного дизайна для визуализации -->
-                    <div class="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40">
-                        <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12">
-                            <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400">1</div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-semibold text-title text-sm">За проезд</h4>
-                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">Фикс</span>
-                                </div>
-                                <p class="text-xs text-muted mt-0.5 italic">— Описание: Обязательно на автобус</p>
-                            </div>
-                            <div class="flex items-center gap-4"><span class="text-base font-bold text-rose-500">-1 320 ₸</span></div>
-                        </div>
-
-                        <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12 border-l-2 border-l-rose-500/40">
-                            <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 text-[10px] font-bold text-center leading-5 text-zinc-400 border border-zinc-700">2</div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-semibold text-title text-sm">Самоналог</h4>
-                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">Процент</span>
-                                </div>
-                                <p class="text-xs text-muted mt-0.5 italic">— Описание: Откладываю в копилку</p>
-                            </div>
-                            <div class="flex items-center gap-4"><span class="text-base font-bold text-rose-500">-30%</span></div>
-                        </div>
-                    </div>
-                </div>
+            <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-12">
+                <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
             </section>
 
-            <!-- БОКОВАЯ ПАНЕЛЬ ШАБЛОНОВ -->
             <section class="lg:col-span-1">
                 <div class="flex flex-col gap-6 sticky top-6">
 
-                    <!-- ФОРМА: ЗАПУСК РАСЧЕТА -->
                     <div class="glass-card p-6 rounded-2xl border-l-4 border-l-lime-400">
                         <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Запустить расчёт</h2>
                         <p class="text-xs text-muted mb-4">Укажите название существующего шаблона и сумму</p>
@@ -210,7 +169,6 @@
                         </div>
                     </div>
 
-                    <!-- ФОРМА: СОЗДНИЕ ШАБЛОНА -->
                     <div class="glass-card p-6 rounded-2xl">
                         <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Создание шаблона</h2>
                         <p class="text-xs text-muted mb-4">Формирование цепочки правил распределения</p>
@@ -241,7 +199,6 @@
                                     </button>
                                 </div>
 
-                                <!-- Динамический список локально накликанных правил -->
                                 <div id="temp-rules-list" class="text-[11px] text-muted flex flex-col gap-1 max-h-28 overflow-y-auto mb-2 p-1 bg-zinc-950/20 rounded">
                                     <span class="italic text-zinc-600 p-1">Список правил пуст</span>
                                 </div>
@@ -257,7 +214,6 @@
             </section>
         </div>
 
-        <!-- СТРАНИЦА КОПИЛОК -->
         <div id="banks-page" class="tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
             <section class="lg:col-span-2 flex flex-col gap-6">
                 <div>
@@ -266,27 +222,10 @@
                 </div>
 
                 <div class="flex flex-col gap-4" id="active-banks-container">
-                    <!-- Карточка по умолчанию из дизайна -->
-                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <span class="bg-lime-950/30 text-lime-400 text-xs px-2.5 py-1 rounded-full font-medium border border-lime-800/30">Цель: Lada</span>
-                                <p class="text-xs text-muted mt-3 max-w-md italic">"Once i have a dream that one day ill move w niggas to diff cities"</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs text-muted">Собрано</p>
-                                <p class="text-2xl font-black text-title">7 633 <span class="text-xs font-normal text-muted">/ 45 000</span></p>
-                            </div>
-                        </div>
-                        <div class="w-full bg-zinc-800/20 h-3 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
-                            <div class="h-full rounded-full" style="width: 17%; background: linear-gradient(90deg, #163a21 0%, #a3e635 100%);"></div>
-                        </div>
-                        <div class="flex justify-between items-center mt-3 text-xs text-muted"><span>Прогресс: 17%</span><span>Осталось: 37 367</span></div>
-                    </div>
+                    <div class="text-center py-12 text-muted italic">Загрузка активных банковских счетов...</div>
                 </div>
             </section>
 
-            <!-- БОКОВАЯ ПАНЕЛЬ КОПИЛОК -->
             <section class="lg:col-span-1">
                 <div class="glass-card p-6 rounded-2xl sticky top-6">
                     <h2 class="text-xl font-bold mb-4 text-title flex items-center gap-2">Создать новый Банк</h2>
@@ -312,43 +251,176 @@
             </section>
         </div>
 
+        <section class="mt-12 p-6 glass-card rounded-2xl border border-dashed border-zinc-700/60">
+            <h3 class="text-sm font-mono text-lime-400 flex items-center gap-2">🟢 ПАНЕЛЬ ДИАГНОСТИКИ ДАТЧИКОВ СЕТИ</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs font-mono">
+                <div class="p-3 bg-black/40 rounded-xl">
+                    <p class="text-zinc-500">Конфигурация фронтенда:</p>
+                    <p class="mt-1">Текущий URL страницы: <span id="diag-current-origin" class="text-sky-400">---</span></p>
+                    <p>Целевой URL бэкенда (API_URL): <span id="diag-api-url" class="text-yellow-400">---</span></p>
+                </div>
+                <div class="p-3 bg-black/40 rounded-xl">
+                    <p class="text-zinc-500">Статус последнего замера:</p>
+                    <div id="diag-status-log" class="text-rose-400 mt-1 italic">Запросы еще не выполнялись...</div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <script>
-        // Базовый URL бэкенда FastAPI
+        // Автоматически определяем текущий хост (localhost или 127.0.0.1)
+        const CURRENT_HOST = window.location.hostname;
+        // Замени старое определение на этот явный адрес:
         const API_URL = 'http://127.0.0.1:8000/api';
 
-        // Локальное хранилище для конструируемых правил внутри шаблона
         let currentTemplatePayments = [];
 
-        // Переключатель тем оформления (Dark/Light)
-        function toggleTheme() {
-            const body = document.body;
-            if (body.classList.contains('theme-dark')) {
-                body.classList.remove('theme-dark');
-                body.classList.add('theme-light');
+        // Автозапуск загрузки данных при старте страницы
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('diag-current-origin').innerText = window.location.origin;
+            document.getElementById('diag-api-url').innerText = API_URL;
+
+            loadAllTemplates();
+            loadAllBanks();
+        });
+
+        function logDiagnostic(endpoint, status, detail) {
+            const logBox = document.getElementById('diag-status-log');
+            if(status === 'OK') {
+                logBox.className = "text-emerald-400 mt-1";
+                logBox.innerHTML = `✅ [${endpoint}] Успешно соединен с бэком!`;
             } else {
-                body.classList.remove('theme-light');
-                body.classList.add('theme-dark');
+                logBox.className = "text-rose-400 mt-1 font-bold";
+                logBox.innerHTML = `🚨 ОШИБКА НА [${endpoint}]:<br>Тип: ${status}<br>Детали: ${detail}<br><span class="text-zinc-400 text-[10px]">Совет: Обязательно нажми Ctrl + F5 для сброса кэша CORS!</span>`;
             }
         }
 
-        // Логика табов (Вкладок)
+        // Функция переключения вкладок
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
 
-            document.getElementById('btn-templates').classList.remove('text-lime-400', 'font-semibold');
-            document.getElementById('btn-banks').classList.remove('text-lime-400', 'font-semibold');
-            document.getElementById('btn-templates').classList.add('text-muted');
-            document.getElementById('btn-banks').classList.add('text-muted');
-
-            const activeBtn = tabId === 'templates-page' ? 'btn-templates' : 'btn-banks';
-            document.getElementById(activeBtn).classList.remove('text-muted');
-            document.getElementById(activeBtn).classList.add('text-lime-400', 'font-semibold');
+            document.getElementById('btn-templates').className = tabId === 'templates-page' ? 'text-lime-400 font-semibold cursor-pointer' : 'text-muted hover:text-lime-400 cursor-pointer';
+            document.getElementById('btn-banks').className = tabId === 'banks-page' ? 'text-lime-400 font-semibold cursor-pointer' : 'text-muted hover:text-lime-400 cursor-pointer';
         }
 
-        // 1. КОНСТРУКТОР: Добавление одного правила во временный список
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('theme-dark');
+            body.classList.toggle('theme-light');
+        }
+
+        // --- ДИНАМИЧЕСКИЙ СБОР И ВЫВОД ШАБЛОНОВ ИЗ БАЗЫ ---
+        async function loadAllTemplates() {
+            const container = document.getElementById('active-templates-container');
+            try {
+                const response = await fetch(`${API_URL}/templates`);
+                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+                const templates = await response.json();
+
+                logDiagnostic('/templates', 'OK', 'Данные прочитаны');
+
+                if (templates.length === 0) {
+                    container.innerHTML = '<div class="text-center py-12 text-muted italic">В базе нет созданных шаблонов. Сделайте первый на панели справа!</div>';
+                    return;
+                }
+
+                container.innerHTML = templates.map(tpl => {
+                    const rulesHtml = tpl.payments.map((p, idx) => {
+                        const isPercent = p.type === 'percentage' || p.type === 'percent';
+                        const badgeText = isPercent ? 'Процент' : 'Фикс';
+                        const displayValue = isPercent ? `-${p.value}%` : `-${p.value.toLocaleString()} ₸`;
+                        const borderHighlight = isPercent ? 'border-l-2 border-l-rose-500/40' : '';
+
+                        return `
+                            <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12 ${borderHighlight}">
+                                <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400">${idx + 1}</div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="font-semibold text-title text-sm">${p.description.split('(')[0].trim()}</h4>
+                                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">${badgeText}</span>
+                                    </div>
+                                    <p class="text-xs text-muted mt-0.5 italic">— Комментарий: ${p.description.includes('(') ? p.description.split('(')[1].replace(')', '') : 'Отсутствует'}</p>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-base font-bold text-rose-500">${displayValue}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="flex flex-col gap-6">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-800/50 pb-4 gap-4">
+                                <div>
+                                    <h2 class="text-2xl font-bold tracking-tight text-title flex items-center gap-2">Шаблон: ${tpl.name}</h2>
+                                    <p class="text-xs text-muted mt-0.5">Правила обрабатываются строго по принципу FIFO (сверху вниз)</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40">
+                                ${rulesHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-center py-12 text-rose-400 italic">Ошибка соединения с API при загрузке шаблонов.</div>';
+                logDiagnostic('/templates', 'Блокировка сети / CORS', err.message);
+            }
+        }
+
+        // --- ДИНАМИЧЕСКИЙ СБОР И ВЫВОД БАНКОВ ИЗ БАЗЫ ---
+        async function loadAllBanks() {
+            const container = document.getElementById('active-banks-container');
+            try {
+                const response = await fetch(`${API_URL}/banks`);
+                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+                const banks = await response.json();
+
+                logDiagnostic('/banks', 'OK', 'Данные прочитаны');
+
+                if (banks.length === 0) {
+                    container.innerHTML = '<div class="text-center py-12 text-muted italic">У вас пока нет открытых счетов. Самое время поставить цель!</div>';
+                    return;
+                }
+
+                container.innerHTML = banks.map(bank => {
+                    const current = bank.current_scale || 0;
+                    const target = bank.target_scale;
+                    const progressPercent = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
+                    const leftToAccumulate = Math.max(target - current, 0);
+
+                    return `
+                        <div class="glass-card p-6 rounded-3xl relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <span class="bg-lime-950/30 text-lime-400 text-xs px-2.5 py-1 rounded-full font-medium border border-lime-800/30">Цель: ${bank.name}</span>
+                                    <p class="text-xs text-muted mt-3 max-w-md italic">"${bank.description || 'Без мотивирующей цитаты'}"</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-muted">Собрано</p>
+                                    <p class="text-2xl font-black text-title">${current.toLocaleString()} <span class="text-xs font-normal text-muted">/ ${target.toLocaleString()}</span></p>
+                                </div>
+                            </div>
+                            <div class="w-full bg-zinc-800/20 h-3 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
+                                <div class="h-full rounded-full" style="width: ${progressPercent}%; background: linear-gradient(90deg, #163a21 0%, #a3e635 100%);"></div>
+                            </div>
+                            <div class="flex justify-between items-center mt-3 text-xs text-muted">
+                                <span>Прогресс: ${progressPercent}%</span>
+                                <span>Осталось собрать: ${leftToAccumulate.toLocaleString()} ₸</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                logDiagnostic('/banks', 'Блокировка сети / CORS', err.message);
+            }
+        }
+
+        // --- ЛОКАЛЬНЫЙ КОНСТРУКТОР ПРАВИЛ ---
         function addRuleToTempList() {
             const title = document.getElementById('rule-title').value.trim();
             const desc = document.getElementById('rule-desc').value.trim();
@@ -356,11 +428,10 @@
             const value = parseFloat(document.getElementById('rule-value').value);
 
             if (!title || isNaN(value)) {
-                alert("Пожалуйста, заполните название правила и корректное числовое значение!");
+                alert("Заполните название правила и его числовое значение!");
                 return;
             }
 
-            // Формируем описание в формате "Название (Комментарий)" или просто "Название"
             const finalDescription = desc ? `${title} (${desc})` : title;
 
             currentTemplatePayments.push({
@@ -369,7 +440,6 @@
                 description: finalDescription
             });
 
-            // Очищаем поля ввода конструктора для следующего правила
             document.getElementById('rule-title').value = '';
             document.getElementById('rule-desc').value = '';
             document.getElementById('rule-value').value = '';
@@ -377,7 +447,6 @@
             renderTempRules();
         }
 
-        // Рендер временных правил внутри формы создания шаблона
         function renderTempRules() {
             const container = document.getElementById('temp-rules-list');
             if (currentTemplatePayments.length === 0) {
@@ -385,35 +454,27 @@
                 return;
             }
             container.innerHTML = currentTemplatePayments.map((p, idx) =>
-                `<div class="p-1 bg-zinc-900/60 rounded mb-1 text-title flex justify-between">
+                `<div class="p-1 bg-zinc-900/60 rounded mb-1 text-title flex justify-between items-center text-[11px]">
                     <span>${idx + 1}. <b>${p.type === 'fix' ? 'ФИКС' : 'ПРОЦЕНТ'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
-                    <button onclick="removeTempRule(${idx})" class="text-rose-400 hover:text-rose-500 ml-2 px-1">✕</button>
+                    <button onclick="removeTempRule(${idx})" class="text-rose-400 hover:text-rose-500 px-1 font-bold">✕</button>
                  </div>`
             ).join('');
         }
 
-        // Удаление правила из временного списка, если передумал
         function removeTempRule(index) {
             currentTemplatePayments.splice(index, 1);
             renderTempRules();
         }
 
-        // 2. СЕТЕВОЙ ЗАПРОС: Отправка готового шаблона со списком правил на бэкенд
+        // СОХРАНЕНИЕ ШАБЛОНА НА СЕРВЕРЕ И ЕГО ПЕРЕРЕНДЕР
         async function sendTemplateToBackend() {
             const name = document.getElementById('tpl-name').value.trim();
-            if (!name) {
-                alert("Укажите уникальное название шаблона!");
-                return;
-            }
-            if (currentTemplatePayments.length === 0) {
-                alert("Добавьте хотя бы одно правило в конструкторе ниже перед сохранением!");
+            if (!name || currentTemplatePayments.length === 0) {
+                alert("Введите имя шаблона и наберите список правил!");
                 return;
             }
 
-            const payload = {
-                name: name,
-                payments: currentTemplatePayments
-            };
+            const payload = { name: name, payments: currentTemplatePayments };
 
             try {
                 const response = await fetch(`${API_URL}/templates`, {
@@ -421,126 +482,84 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const data = await response.json();
 
                 if (response.ok) {
-                    alert(data.message || `Шаблон "${name}" успешно добавлен в базу!`);
-                    // Сброс формы
                     currentTemplatePayments = [];
                     document.getElementById('tpl-name').value = '';
                     renderTempRules();
+                    await loadAllTemplates();
                 } else {
-                    alert("Ошибка бэкенда: " + (data.message || "Некорректные данные"));
+                    const data = await response.json();
+                    alert("Ошибка бэка: " + data.message);
                 }
             } catch (err) {
-                alert("Не удалось связаться с сервером FastAPI. Проверьте, запущен ли uvicorn и настроен ли CORS.");
+                logDiagnostic('POST /templates', 'Ошибка отправки', err.message);
             }
         }
 
-        // 3. СЕТЕВОЙ ЗАПРОС: Симуляция расчета бюджета методом FIFO
+        // ЗАПУСК СИМУЛЯЦИИ РАСЧЕТА БЮДЖЕТА
         async function sendToCalculation() {
             const templateName = document.getElementById('calc-template-name').value.trim();
             const amount = parseFloat(document.getElementById('calc-amount').value);
 
             if (!templateName || isNaN(amount)) {
-                alert("Введите название существующего шаблона и сумму поступления!");
+                alert("Укажите имя шаблона для расчета и сумму денег!");
                 return;
             }
-
-            const payload = {
-                template_name: templateName,
-                amount: amount
-            };
 
             try {
                 const response = await fetch(`${API_URL}/calculate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ template_name: templateName, amount: amount })
                 });
                 const data = await response.json();
 
                 if (response.ok) {
                     const r = data.result;
-                    let report = `📊 РЕЗУЛЬТАТ РАСЧЕТА (Шаблон: "${r.template_name}")\n\n`;
-                    report += `💰 Исходный бюджет: ${r.initial_amount} ₸\n`;
-                    report += `📉 Конечный остаток: ${r.final_balance} ₸\n`;
-                    report += `🏁 Статус: ${r.success ? "Успешно распределено! Хватило на все шаги." : `Крах на шаге №${r.error_step}`}`;
-
+                    let report = `📊 РЕЗУЛЬТАТ РАСЧЕТА\n\nШаблон: "${r.template_name}"\n`;
+                    report += `💰 Входящий доход: ${r.initial_amount} ₸\n`;
+                    report += `📉 Свободный остаток: ${r.final_balance} ₸\n`;
+                    report += `🏁 Статус: ${r.success ? "Денег хватило на все пункты FIFO!" : `Крах! Алгоритм остановился на шаге №${r.error_step}`}`;
                     alert(report);
                 } else {
-                    alert("Ошибка расчета: " + (data.message || "Шаблон не найден в базе данных."));
+                    alert("Ошибка: " + data.message);
                 }
             } catch (err) {
-                alert("Ошибка соединения с API-сервером.");
+                logDiagnostic('POST /calculate', 'Ошибка расчета', err.message);
             }
         }
 
-        // 4. СЕТЕВОЙ ЗАПРОС: Создание новой копилки (Банка)
+        // СОЗДАТЬ КОПИЛКУ (БАНК) И ПЕРЕЗАГРУЗИТЬ СПИСОК
         async function sendBankToBackend() {
             const name = document.getElementById('bank-name').value.trim();
             const target = parseFloat(document.getElementById('bank-target').value);
             const desc = document.getElementById('bank-desc').value.trim();
 
             if (!name || isNaN(target)) {
-                alert("Заполните название банка и целевую сумму накоплений!");
+                alert("Укажите цель счёта и необходимую сумму!");
                 return;
             }
-
-            const payload = {
-                name: name,
-                target_scale: target,
-                description: desc || ""
-            };
 
             try {
                 const response = await fetch(`${API_URL}/banks`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ name: name, target_scale: target, current_scale: 0, description: desc })
                 });
-                const data = await response.json();
 
                 if (response.ok) {
-                    alert(data.message || `Копилка "${name}" успешно открыта!`);
-
-                    // Добавляем созданную карточку на экран без перезагрузки
-                    addNewBankCardToUI(name, target, desc);
-
-                    // Очищаем форму
                     document.getElementById('bank-name').value = '';
                     document.getElementById('bank-target').value = '';
                     document.getElementById('bank-desc').value = '';
+                    await loadAllBanks();
                 } else {
-                    alert("Ошибка при создании банка: " + (data.message || "Ошибка валидации"));
+                    const data = await response.json();
+                    alert("Ошибка создания банка: " + data.message);
                 }
             } catch (err) {
-                alert("Сервер не ответил на запрос.");
+                logDiagnostic('POST /banks', 'Ошибка банка', err.message);
             }
-        }
-
-        // Вспомогательный рендер новой карточки банка в UI
-        function addNewBankCardToUI(name, target, desc) {
-            const container = document.getElementById('active-banks-container');
-            const newCardHtml = `
-                <div class="glass-card p-6 rounded-3xl relative overflow-hidden mt-4">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <span class="bg-lime-950/30 text-lime-400 text-xs px-2.5 py-1 rounded-full font-medium border border-lime-800/30">Цель: ${name}</span>
-                            <p class="text-xs text-muted mt-3 max-w-md italic">"${desc || 'Без описания'}"</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs text-muted">Собрано</p>
-                            <p class="text-2xl font-black text-title">0 <span class="text-xs font-normal text-muted">/ ${target}</span></p>
-                        </div>
-                    </div>
-                    <div class="w-full bg-zinc-800/20 h-3 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
-                        <div class="h-full rounded-full" style="width: 0%; background: linear-gradient(90deg, #163a21 0%, #a3e635 100%);"></div>
-                    </div>
-                    <div class="flex justify-between items-center mt-3 text-xs text-muted"><span>Прогресс: 0%</span><span>Осталось: ${target}</span></div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', newCardHtml);
         }
     </script>
 </body>

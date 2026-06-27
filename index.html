@@ -6,7 +6,7 @@
     <title>Finance Dashboard — Finlite DB</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* Базовые стили и супер-плавный переход для всего документа */
+        /* Твой оригинальный дизайн, за который рвалась жопа */
         * {
             transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                         border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
@@ -18,7 +18,6 @@
             overflow-x: hidden;
         }
 
-        /* ТЕМНАЯ ТЕМА (По умолчанию) */
         body.theme-dark {
             background-color: #0d120f;
             color: #f4f4f0;
@@ -46,7 +45,6 @@
         .theme-dark .text-muted { color: #a8a29e; }
         .theme-dark .text-title { color: #e7e5e4; }
 
-        /* СВЕТЛАЯ ТЕМА */
         body.theme-light {
             background-color: #fcfbf7;
             color: #1c241f;
@@ -76,7 +74,6 @@
         .theme-light .text-muted { color: #71717a; }
         .theme-light .text-title { color: #1c241f; }
 
-        /* Общие акценты */
         .accent-lime { color: #a3e635; }
         .theme-light .accent-lime { color: #4d7c0f; }
 
@@ -147,206 +144,71 @@
 
         <div id="templates-page" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <section class="lg:col-span-2 flex flex-col gap-12">
-
-                <div class="flex flex-col gap-6">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-800/50 pb-4 gap-4">
-                        <div>
-                            <h2 class="text-2xl font-bold tracking-tight text-title flex items-center gap-2">
-                                <span class="accent-lime"></span> Шаблон: Стипендия
-                            </h2>
-                            <p class="text-xs text-muted mt-0.5">Правила обрабатываются строго по принципу FIFO (сверху вниз)</p>
-                        </div>
-
-                        <div class="flex items-center gap-3">
-                            <div class="flex flex-col">
-                                <label class="text-[10px] uppercase tracking-wider text-muted mb-1 font-semibold">🔗 Привязанный банк для остатков</label>
-                                <select class="bg-zinc-900 border border-zinc-800 text-xs text-title rounded-lg px-2 py-1.5 focus:outline-none focus:border-lime-500">
-                                    <option value="lada">Цель: Lada</option>
-                                    <option value="none">— Без привязки —</option>
-                                </select>
-                            </div>
-                            <button class="bg-rose-950/30 hover:bg-rose-900/50 text-rose-400 text-xs px-3 py-3 rounded-xl border border-rose-900/20 cursor-pointer transition mt-4 md:mt-0">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40">
-                        <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12">
-                            <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400">1</div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-semibold text-title text-sm">За проезд</h4>
-                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">Фикс</span>
-                                </div>
-                                <p class="text-xs text-muted mt-0.5 italic">— Описание: Обязательно на автобус</p>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <span class="text-base font-bold text-rose-500">-1 320 ₸</span>
-                            </div>
-                        </div>
-
-                        <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12">
-                            <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400">2</div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-semibold text-title text-sm">На все про все</h4>
-                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">Фикс</span>
-                                </div>
-                                <p class="text-xs text-muted mt-0.5 italic">— Описание: Карманные расходы на месяц</p>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <span class="text-base font-bold text-rose-500">-28 000 ₸</span>
-                            </div>
-                        </div>
-
-                        <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12 border-l-2 border-l-rose-500/40">
-                            <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 text-[10px] font-bold text-center leading-5 text-zinc-400 border border-zinc-700">3</div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-semibold text-title text-sm">Самоналог</h4>
-                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">Процент</span>
-                                </div>
-                                <p class="text-xs text-muted mt-0.5 italic">— Описание: Откладываю в копилку</p>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <span class="text-base font-bold text-rose-500">-30%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-6">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-800/50 pb-4 gap-4">
-                        <div>
-                            <h2 class="text-2xl font-bold tracking-tight text-title flex items-center gap-2">
-                                <span class="text-amber-400"></span> Шаблон: Зарплата
-                            </h2>
-                            <p class="text-xs text-muted mt-0.5">Правила обрабатываются строго по принципу FIFO (сверху вниз)</p>
-                        </div>
-
-                        <div class="flex items-center gap-3">
-                            <div class="flex flex-col">
-                                <label class="text-[10px] uppercase tracking-wider text-muted mb-1 font-semibold">🔗 Привязанный банк для остатков</label>
-                                <select class="bg-zinc-900 border border-zinc-800 text-xs text-title rounded-lg px-2 py-1.5 focus:outline-none focus:border-lime-500">
-                                    <option value="none">— Без привязки —</option>
-                                    <option value="lada">Цель: Lada</option>
-                                </select>
-                            </div>
-                            <button class="bg-rose-950/30 hover:bg-rose-900/50 text-rose-400 text-xs px-3 py-3 rounded-xl border border-rose-900/20 cursor-pointer transition mt-4 md:mt-0">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40">
-                        <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12">
-                            <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400">1</div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-semibold text-title text-sm">Аренда квартиры</h4>
-                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">Фикс</span>
-                                </div>
-                                <p class="text-xs text-muted mt-0.5 italic">— Описание: Оплата хозяину до 5 числа</p>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <span class="text-base font-bold text-rose-500">-150 000 ₸</span>
-                            </div>
-                        </div>
-
-                        <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12 border-l-2 border-l-rose-500/40">
-                            <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 text-[10px] font-bold text-center leading-5 text-zinc-400 border border-zinc-700">2</div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-semibold text-title text-sm">Инвестиционный портфель</h4>
-                                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">Процент</span>
-                                </div>
-                                <p class="text-xs text-muted mt-0.5 italic">— Описание: Покупка акций/ETF</p>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <span class="text-base font-bold text-rose-500">-15%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+            <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-12">
+                <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
             </section>
 
             <section class="lg:col-span-1">
                 <div class="flex flex-col gap-6 sticky top-6">
 
                     <div class="glass-card p-6 rounded-2xl border-l-4 border-l-lime-400">
-                        <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">
-                            <span></span> Запустить расчёт
-                        </h2>
-                        <p class="text-xs text-muted mb-4">Выберите существующий шаблон из списка и укажите бюджет</p>
+                        <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Запустить расчёт</h2>
+                        <p class="text-xs text-muted mb-4">Укажите название существующего шаблона и сумму</p>
 
                         <div class="flex flex-col gap-3">
                             <div>
-                                <label class="block text-[11px] text-muted mb-1">Какой шаблон применить?</label>
-                                <select class="input-dark bg-zinc-900 border border-zinc-700/50 text-sm py-2">
-                                    <option value="stipendia">Стипендия</option>
-                                    <option value="salary">Зарплата</option>
-                                </select>
+                                <label class="block text-[11px] text-muted mb-1">Название шаблона в системе</label>
+                                <input type="text" id="calc-template-name" placeholder="Например: Стипендия" class="input-dark py-2 text-sm">
                             </div>
                             <div>
                                 <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
-                                <input type="number" placeholder="Например: 55000" class="input-dark py-2 text-sm">
+                                <input type="number" id="calc-amount" placeholder="Например: 55000" class="input-dark py-2 text-sm">
                             </div>
-                            <button class="w-full btn-gradient py-2.5 rounded-xl text-sm cursor-pointer mt-1">
-                                Рассчитать
+                            <button onclick="sendToCalculation()" class="w-full btn-gradient py-2.5 rounded-xl text-sm cursor-pointer mt-1">
+                                Рассчитать бюджет
                             </button>
                         </div>
                     </div>
 
                     <div class="glass-card p-6 rounded-2xl">
-                        <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">
-                            <span></span> Создание шаблона
-                        </h2>
-                        <p class="text-xs text-muted mb-4">Инициализация нового листа правил в системе</p>
+                        <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Создание шаблона</h2>
+                        <p class="text-xs text-muted mb-4">Формирование цепочки правил распределения</p>
 
-                        <form class="flex flex-col gap-3" onsubmit="event.preventDefault();">
+                        <div class="flex flex-col gap-3">
                             <div>
-                                <label class="block text-[11px] text-muted mb-1">Название нового шаблона</label>
-                                <input type="text" placeholder="Например: Подработка, Фриланс" class="input-dark py-2 text-sm">
+                                <label class="block text-[11px] text-muted mb-1">Название шаблона</label>
+                                <input type="text" id="tpl-name" placeholder="Например: Зарплата" class="input-dark py-2 text-sm">
                             </div>
 
-                            <div>
-                                <label class="block text-[11px] text-muted mb-1">Первое правило (Название)</label>
-                                <input type="text" placeholder="Например: Налог" class="input-dark py-2 text-sm">
-                            </div>
+                            <div class="border-t border-zinc-800/60 my-1 pt-2">
+                                <span class="text-[11px] uppercase tracking-wider font-bold text-lime-400 block mb-2">Конструктор правил</span>
 
-                            <div>
-                                <label class="block text-[11px] text-muted mb-1">Описание правила</label>
-                                <input type="text" placeholder="Необязательно..." class="input-dark py-2 text-sm">
-                            </div>
+                                <div class="flex flex-col gap-2 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-800/50 mb-2">
+                                    <input type="text" id="rule-title" placeholder="Название (например: На проезд)" class="input-dark py-1.5 text-xs">
+                                    <input type="text" id="rule-desc" placeholder="Описание/Комментарий..." class="input-dark py-1.5 text-xs">
 
-                            <div>
-                                <label class="block text-[11px] text-muted mb-1">Тип отчисления</label>
-                                <select class="input-dark py-2 text-sm" id="payment-type" onchange="toggleTemplateFields()">
-                                    <option value="fix">Фиксированный (Fix сумма)</option>
-                                    <option value="percent">Процентный (% от дохода)</option>
-                                </select>
-                            </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <select id="payment-type" class="input-dark py-1.5 text-xs bg-zinc-900">
+                                            <option value="fix">Фикс сумма</option>
+                                            <option value="percentage">Процент %</option>
+                                        </select>
+                                        <input type="number" id="rule-value" placeholder="Значение" class="input-dark py-1.5 text-xs">
+                                    </div>
 
-                            <div id="fix-amount-block">
-                                <label class="block text-[11px] text-muted mb-1">Сумма платежа (₸)</label>
-                                <input type="number" placeholder="2500" class="input-dark py-2 text-sm">
-                            </div>
+                                    <button onclick="addRuleToTempList()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-1.5 rounded-lg cursor-pointer transition">
+                                        + Добавить правило в список
+                                    </button>
+                                </div>
 
-                            <div id="percent-amount-block" class="hidden">
-                                <label class="block text-[11px] text-muted mb-1">Процент от распределения</label>
-                                <div class="relative">
-                                    <input type="number" placeholder="10" class="input-dark py-2 text-sm pr-8">
-                                    <span class="absolute right-4 top-2 text-stone-500 text-sm">%</span>
+                                <div id="temp-rules-list" class="text-[11px] text-muted flex flex-col gap-1 max-h-28 overflow-y-auto mb-2 p-1 bg-zinc-950/20 rounded">
+                                    <span class="italic text-zinc-600 p-1">Список правил пуст</span>
                                 </div>
                             </div>
 
-                            <button type="submit" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer mt-2 text-sm shadow">
-                                Создать
+                            <button onclick="sendTemplateToBackend()" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer mt-1 text-sm shadow">
+                                Сохранить шаблон на бэкенд
                             </button>
-                        </form>
+                        </div>
                     </div>
 
                 </div>
@@ -356,65 +218,36 @@
         <div id="banks-page" class="tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
             <section class="lg:col-span-2 flex flex-col gap-6">
                 <div>
-                    <h2 class="text-2xl font-bold mb-1 tracking-tight text-title flex items-center gap-2">
-                        <span class="accent-lime"></span> Активные Банки (Копилки)
-                    </h2>
+                    <h2 class="text-2xl font-bold mb-1 tracking-tight text-title flex items-center gap-2">Активные Банки (Копилки)</h2>
                     <p class="text-xs text-muted mb-4">Ваши финансовые цели и прогресс накоплений</p>
                 </div>
 
-                <div class="flex flex-col gap-4">
-                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <span class="bg-lime-950/30 text-lime-400 theme-light:bg-lime-100 theme-light:text-lime-700 text-xs px-2.5 py-1 rounded-full font-medium border border-lime-800/30">Цель: Lada</span>
-                                <p class="text-xs text-muted mt-3 max-w-md italic">
-                                    "Once i have a dream that one day ill move w niggas to diff cities"
-                                </p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs text-muted">Собрано</p>
-                                <p class="text-2xl font-black text-title">7 633 <span class="text-xs font-normal text-muted">/ 45 000</span></p>
-                            </div>
-                        </div>
-
-                        <div class="w-full bg-zinc-800/20 h-3 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
-                            <div class="h-full rounded-full" style="width: 17%; background: linear-gradient(90deg, #163a21 0%, #a3e635 100%);"></div>
-                        </div>
-
-                        <div class="flex justify-between items-center mt-3 text-xs text-muted">
-                            <span>Прогресс: 17%</span>
-                            <span>Осталось: 37 367</span>
-                        </div>
-                    </div>
+                <div class="flex flex-col gap-4" id="active-banks-container">
+                    <div class="text-center py-12 text-muted italic">Загрузка активных банковских счетов...</div>
                 </div>
             </section>
 
             <section class="lg:col-span-1">
                 <div class="glass-card p-6 rounded-2xl sticky top-6">
-                    <h2 class="text-xl font-bold mb-4 text-title flex items-center gap-2">
-                        <span></span> Создать новый Банк
-                    </h2>
+                    <h2 class="text-xl font-bold mb-4 text-title flex items-center gap-2">Создать новый Банк</h2>
 
-                    <form class="flex flex-col gap-4" onsubmit="event.preventDefault();">
+                    <div class="flex flex-col gap-4">
                         <div>
                             <label class="block text-xs text-muted mb-1">Название банка (Цель)</label>
-                            <input type="text" placeholder="Например: Новый ПК" class="input-dark">
+                            <input type="text" id="bank-name" placeholder="Например: Новый ПК" class="input-dark">
                         </div>
-
                         <div>
                             <label class="block text-xs text-muted mb-1">Целевая сумма накопления</label>
-                            <input type="number" placeholder="45000" class="input-dark">
+                            <input type="number" id="bank-target" placeholder="45000" class="input-dark">
                         </div>
-
                         <div>
                             <label class="block text-xs text-muted mb-1">Мотивирующая цитата</label>
-                            <textarea placeholder="Once i have a dream..." class="input-dark h-20 resize-none"></textarea>
+                            <textarea id="bank-desc" placeholder="Once i have a dream..." class="input-dark h-20 resize-none"></textarea>
                         </div>
-
-                        <button type="submit" class="w-full btn-gradient py-3 rounded-xl cursor-pointer mt-2">
+                        <button onclick="sendBankToBackend()" class="w-full btn-gradient py-3 rounded-xl cursor-pointer mt-2">
                              Открыть счет
                         </button>
-                    </form>
+                    </div>
                 </div>
             </section>
         </div>
@@ -422,19 +255,16 @@
     </main>
 
     <script>
-        // Переключение тем
-        function toggleTheme() {
-            const body = document.body;
-            if (body.classList.contains('theme-dark')) {
-                body.classList.remove('theme-dark');
-                body.classList.add('theme-light');
-            } else {
-                body.classList.remove('theme-light');
-                body.classList.add('theme-dark');
-            }
-        }
+        const API_URL = 'http://127.0.0.1:8000/api';
+        let currentTemplatePayments = [];
 
-        // Переключение вкладок
+        // Автозапуск загрузки данных при старте страницы
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAllTemplates();
+            loadAllBanks();
+        });
+
+        // Функция переключения вкладок
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
@@ -449,11 +279,259 @@
             document.getElementById(activeBtn).classList.add('text-lime-400', 'font-semibold');
         }
 
-        // Переключение полей фикс/процент в конструкторе правил
-        function toggleTemplateFields() {
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('theme-dark');
+            body.classList.toggle('theme-light');
+        }
+
+        // --- ДИНАМИЧЕСКИЙ СБОР И ВЫВОД ШАБЛОНОВ ИЗ БАЗЫ ---
+        async function loadAllTemplates() {
+            const container = document.getElementById('active-templates-container');
+            try {
+                const response = await fetch(`${API_URL}/templates`);
+                if (!response.ok) throw new Error("Не удалось загрузить шаблоны");
+                const templates = await response.json();
+
+                if (templates.length === 0) {
+                    container.innerHTML = '<div class="text-center py-12 text-muted italic">В базе нет созданных шаблонов. Сделайте первый на панели справа!</div>';
+                    return;
+                }
+
+                container.innerHTML = templates.map(tpl => {
+                    // Генерируем карточки правил для конкретного шаблона
+                    const rulesHtml = tpl.payments.map((p, idx) => {
+                        const isPercent = p.type === 'percentage' || p.type === 'percent';
+                        const badgeText = isPercent ? 'Процент' : 'Фикс';
+                        const displayValue = isPercent ? `-${p.value}%` : `-${p.value.toLocaleString()} ₸`;
+                        const borderHighlight = isPercent ? 'border-l-2 border-l-rose-500/40' : '';
+
+                        return `
+                            <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12 ${borderHighlight}">
+                                <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400">${idx + 1}</div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="font-semibold text-title text-sm">${p.description.split('(')[0].trim()}</h4>
+                                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">${badgeText}</span>
+                                    </div>
+                                    <p class="text-xs text-muted mt-0.5 italic">— Комментарий: ${p.description.includes('(') ? p.description.split('(')[1].replace(')', '') : 'Отсутствует'}</p>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-base font-bold text-rose-500">${displayValue}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="flex flex-col gap-6">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-800/50 pb-4 gap-4">
+                                <div>
+                                    <h2 class="text-2xl font-bold tracking-tight text-title flex items-center gap-2">Шаблон: ${tpl.name}</h2>
+                                    <p class="text-xs text-muted mt-0.5">Правила обрабатываются строго по принципу FIFO (сверху вниз)</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40">
+                                ${rulesHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-center py-12 text-rose-400 italic">Ошибка соединения с API при загрузке шаблонов.</div>';
+            }
+        }
+
+        // --- ДИНАМИЧЕСКИЙ СБОР И ВЫВОД БАНКОВ ИЗ БАЗЫ ---
+        async function loadAllBanks() {
+            const container = document.getElementById('active-banks-container');
+            try {
+                const response = await fetch(`${API_URL}/banks`);
+                if (!response.ok) throw new Error("Не удалось получить список копилок");
+                const banks = await response.json();
+
+                if (banks.length === 0) {
+                    container.innerHTML = '<div class="text-center py-12 text-muted italic">У вас пока нет открытых счетов. Самое время поставить цель!</div>';
+                    return;
+                }
+
+                container.innerHTML = banks.map(bank => {
+                    const current = bank.current_scale || 0;
+                    const target = bank.target_scale;
+                    const progressPercent = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
+                    const leftToAccumulate = Math.max(target - current, 0);
+
+                    return `
+                        <div class="glass-card p-6 rounded-3xl relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <span class="bg-lime-950/30 text-lime-400 text-xs px-2.5 py-1 rounded-full font-medium border border-lime-800/30">Цель: ${bank.name}</span>
+                                    <p class="text-xs text-muted mt-3 max-w-md italic">"${bank.description || 'Без мотивирующей цитаты'}"</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs text-muted">Собрано</p>
+                                    <p class="text-2xl font-black text-title">${current.toLocaleString()} <span class="text-xs font-normal text-muted">/ ${target.toLocaleString()}</span></p>
+                                </div>
+                            </div>
+                            <div class="w-full bg-zinc-800/20 h-3 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
+                                <div class="h-full rounded-full" style="width: ${progressPercent}%; background: linear-gradient(90deg, #163a21 0%, #a3e635 100%);"></div>
+                            </div>
+                            <div class="flex justify-between items-center mt-3 text-xs text-muted">
+                                <span>Прогресс: ${progressPercent}%</span>
+                                <span>Осталось собрать: ${leftToAccumulate.toLocaleString()} ₸</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-center py-12 text-rose-400 italic">Ошибка соединения с API при загрузке банков.</div>';
+            }
+        }
+
+        // --- ЛОКАЛЬНЫЙ КОНСТРУКТОР ПРАВИЛ ---
+        function addRuleToTempList() {
+            const title = document.getElementById('rule-title').value.trim();
+            const desc = document.getElementById('rule-desc').value.trim();
             const type = document.getElementById('payment-type').value;
-            document.getElementById('fix-amount-block').classList.toggle('hidden', type !== 'fix');
-            document.getElementById('percent-amount-block').classList.toggle('hidden', type !== 'percent');
+            const value = parseFloat(document.getElementById('rule-value').value);
+
+            if (!title || isNaN(value)) {
+                alert("Заполните название правила и его числовое значение!");
+                return;
+            }
+
+            const finalDescription = desc ? `${title} (${desc})` : title;
+
+            currentTemplatePayments.push({
+                type: type,
+                value: value,
+                description: finalDescription
+            });
+
+            document.getElementById('rule-title').value = '';
+            document.getElementById('rule-desc').value = '';
+            document.getElementById('rule-value').value = '';
+
+            renderTempRules();
+        }
+
+        function renderTempRules() {
+            const container = document.getElementById('temp-rules-list');
+            if (currentTemplatePayments.length === 0) {
+                container.innerHTML = '<span class="italic text-zinc-600 p-1">Список правил пуст</span>';
+                return;
+            }
+            container.innerHTML = currentTemplatePayments.map((p, idx) =>
+                `<div class="p-1 bg-zinc-900/60 rounded mb-1 text-title flex justify-between items-center text-[11px]">
+                    <span>${idx + 1}. <b>${p.type === 'fix' ? 'ФИКС' : 'ПРОЦЕНТ'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
+                    <button onclick="removeTempRule(${idx})" class="text-rose-400 hover:text-rose-500 px-1 font-bold">✕</button>
+                 </div>`
+            ).join('');
+        }
+
+        function removeTempRule(index) {
+            currentTemplatePayments.splice(index, 1);
+            renderTempRules();
+        }
+
+        // СОХРАНЕНИЕ ШАБЛОНА НА СЕРВЕРЕ И ЕГО ПЕРЕРЕНДЕР
+        async function sendTemplateToBackend() {
+            const name = document.getElementById('tpl-name').value.trim();
+            if (!name || currentTemplatePayments.length === 0) {
+                alert("Введите имя шаблона и наберите список правил!");
+                return;
+            }
+
+            const payload = { name: name, payments: currentTemplatePayments };
+
+            try {
+                const response = await fetch(`${API_URL}/templates`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    currentTemplatePayments = [];
+                    document.getElementById('tpl-name').value = '';
+                    renderTempRules();
+                    // Моментальное обновление списка листов без перезагрузки страницы!
+                    await loadAllTemplates();
+                } else {
+                    const data = await response.json();
+                    alert("Ошибка бэка: " + data.message);
+                }
+            } catch (err) {
+                alert("Ошибка связи с сервером.");
+            }
+        }
+
+        // ЗАПУСК СИМУЛЯЦИИ РАСЧЕТА БЮДЖЕТА
+        async function sendToCalculation() {
+            const templateName = document.getElementById('calc-template-name').value.trim();
+            const amount = parseFloat(document.getElementById('calc-amount').value);
+
+            if (!templateName || isNaN(amount)) {
+                alert("Укажите имя шаблона для расчета и сумму денег!");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/calculate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ template_name: templateName, amount: amount })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    const r = data.result;
+                    let report = `📊 РЕЗУЛЬТАТ РАСЧЕТА\n\nШаблон: "${r.template_name}"\n`;
+                    report += `💰 Входящий доход: ${r.initial_amount} ₸\n`;
+                    report += `📉 Свободный остаток: ${r.final_balance} ₸\n`;
+                    report += `🏁 Статус: ${r.success ? "Денег хватило на все пункты FIFO!" : `Крах! Алгоритм остановился на шаге №${r.error_step}`}`;
+                    alert(report);
+                } else {
+                    alert("Ошибка: " + data.message);
+                }
+            } catch (err) {
+                alert("Не удалось выполнить расчет.");
+            }
+        }
+
+        // СОЗДАТЬ КОПИЛКУ (БАНК) И ПЕРЕЗАГРУЗИТЬ СПИСОК
+        async function sendBankToBackend() {
+            const name = document.getElementById('bank-name').value.trim();
+            const target = parseFloat(document.getElementById('bank-target').value);
+            const desc = document.getElementById('bank-desc').value.trim();
+
+            if (!name || isNaN(target)) {
+                alert("Укажите цель счёта и необходимую сумму!");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/banks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, target_scale: target, description: desc })
+                });
+
+                if (response.ok) {
+                    document.getElementById('bank-name').value = '';
+                    document.getElementById('bank-target').value = '';
+                    document.getElementById('bank-desc').value = '';
+                    // Автоматически выкачиваем обновленный список банков из базы!
+                    await loadAllBanks();
+                } else {
+                    const data = await response.json();
+                    alert("Ошибка создания банка: " + data.message);
+                }
+            } catch (err) {
+                alert("Ошибка сетевого запроса.");
+            }
         }
     </script>
 </body>
