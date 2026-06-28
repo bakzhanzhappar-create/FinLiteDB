@@ -1,7 +1,7 @@
 import json
 from dataclasses import asdict
 from decimal import Decimal
-from core import Template, Validator, Fix, Percentage, Bank
+from domain import Template, Validator, Fix, Percentage, Bank
 
 
 class NotFoundError(Exception):
