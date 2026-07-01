@@ -161,7 +161,7 @@
                             </div>
                             <div>
                                 <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
-                                <input type="number" id="calc-amount" placeholder="Например: 55000" class="input-dark py-2 text-sm">
+                                <input type="text" id="calc-amount" placeholder="Например: 55000" class="input-dark py-2 text-sm">
                             </div>
                             <button onclick="sendToCalculation()" class="w-full btn-gradient py-2.5 rounded-xl text-sm cursor-pointer mt-1">
                                 Рассчитать бюджет
@@ -191,7 +191,7 @@
                                             <option value="fix">Фикс сумма</option>
                                             <option value="percentage">Процент %</option>
                                         </select>
-                                        <input type="number" id="rule-value" placeholder="Значение" class="input-dark py-1.5 text-xs">
+                                        <input type="text" id="rule-value" placeholder="Значение" class="input-dark py-1.5 text-xs">
                                     </div>
 
                                     <button onclick="addRuleToTempList()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-1.5 rounded-lg cursor-pointer transition">
@@ -237,7 +237,7 @@
                         </div>
                         <div>
                             <label class="block text-xs text-muted mb-1">Целевая сумма накопления</label>
-                            <input type="number" id="bank-target" placeholder="45000" class="input-dark">
+                            <input type="text" id="bank-target" placeholder="45000" class="input-dark">
                         </div>
                         <div>
                             <label class="block text-xs text-muted mb-1">Мотивирующая цитата</label>
@@ -251,52 +251,17 @@
             </section>
         </div>
 
-        <section class="mt-12 p-6 glass-card rounded-2xl border border-dashed border-zinc-700/60">
-            <h3 class="text-sm font-mono text-lime-400 flex items-center gap-2">🟢 ПАНЕЛЬ ДИАГНОСТИКИ ДАТЧИКОВ СЕТИ</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs font-mono">
-                <div class="p-3 bg-black/40 rounded-xl">
-                    <p class="text-zinc-500">Конфигурация фронтенда:</p>
-                    <p class="mt-1">Текущий URL страницы: <span id="diag-current-origin" class="text-sky-400">---</span></p>
-                    <p>Целевой URL бэкенда (API_URL): <span id="diag-api-url" class="text-yellow-400">---</span></p>
-                </div>
-                <div class="p-3 bg-black/40 rounded-xl">
-                    <p class="text-zinc-500">Статус последнего замера:</p>
-                    <div id="diag-status-log" class="text-rose-400 mt-1 italic">Запросы еще не выполнялись...</div>
-                </div>
-            </div>
-        </section>
-
     </main>
 
     <script>
-        // Автоматически определяем текущий хост (localhost или 127.0.0.1)
-        const CURRENT_HOST = window.location.hostname;
-        // Замени старое определение на этот явный адрес:
         const API_URL = 'http://127.0.0.1:8000/api';
-
         let currentTemplatePayments = [];
 
-        // Автозапуск загрузки данных при старте страницы
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('diag-current-origin').innerText = window.location.origin;
-            document.getElementById('diag-api-url').innerText = API_URL;
-
             loadAllTemplates();
             loadAllBanks();
         });
 
-        function logDiagnostic(endpoint, status, detail) {
-            const logBox = document.getElementById('diag-status-log');
-            if(status === 'OK') {
-                logBox.className = "text-emerald-400 mt-1";
-                logBox.innerHTML = `✅ [${endpoint}] Успешно соединен с бэком!`;
-            } else {
-                logBox.className = "text-rose-400 mt-1 font-bold";
-                logBox.innerHTML = `🚨 ОШИБКА НА [${endpoint}]:<br>Тип: ${status}<br>Детали: ${detail}<br><span class="text-zinc-400 text-[10px]">Совет: Обязательно нажми Ctrl + F5 для сброса кэша CORS!</span>`;
-            }
-        }
-
-        // Функция переключения вкладок
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
@@ -311,15 +276,21 @@
             body.classList.toggle('theme-light');
         }
 
-        // --- ДИНАМИЧЕСКИЙ СБОР И ВЫВОД ШАБЛОНОВ ИЗ БАЗЫ ---
+        function validateNumberInput(value) {
+            const clean = value.toString().trim().replace(',', '.');
+            if (clean === '' || isNaN(Number(clean)) || Number(clean) < 0) {
+                alert("⚠️ Ошибка: Введены некорректные символы суммы или отрицательное значение!");
+                return null;
+            }
+            return Number(clean);
+        }
+
         async function loadAllTemplates() {
             const container = document.getElementById('active-templates-container');
             try {
                 const response = await fetch(`${API_URL}/templates`);
                 if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
                 const templates = await response.json();
-
-                logDiagnostic('/templates', 'OK', 'Данные прочитаны');
 
                 if (templates.length === 0) {
                     container.innerHTML = '<div class="text-center py-12 text-muted italic">В базе нет созданных шаблонов. Сделайте первый на панели справа!</div>';
@@ -328,9 +299,9 @@
 
                 container.innerHTML = templates.map(tpl => {
                     const rulesHtml = tpl.payments.map((p, idx) => {
-                        const isPercent = p.type === 'percentage' || p.type === 'percent';
+                        const isPercent = p.__type__ === 'Percentage';
                         const badgeText = isPercent ? 'Процент' : 'Фикс';
-                        const displayValue = isPercent ? `-${p.value}%` : `-${p.value.toLocaleString()} ₸`;
+                        const displayValue = isPercent ? `-${p.value}%` : `-${Number(p.value).toLocaleString()} ₸`;
                         const borderHighlight = isPercent ? 'border-l-2 border-l-rose-500/40' : '';
 
                         return `
@@ -338,10 +309,9 @@
                                 <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400">${idx + 1}</div>
                                 <div>
                                     <div class="flex items-center gap-2">
-                                        <h4 class="font-semibold text-title text-sm">${p.description.split('(')[0].trim()}</h4>
+                                        <h4 class="font-semibold text-title text-sm">${p.description || 'Без описания'}</h4>
                                         <span class="text-[9px] px-1.5 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase">${badgeText}</span>
                                     </div>
-                                    <p class="text-xs text-muted mt-0.5 italic">— Комментарий: ${p.description.includes('(') ? p.description.split('(')[1].replace(')', '') : 'Отсутствует'}</p>
                                 </div>
                                 <div class="flex items-center gap-4">
                                     <span class="text-base font-bold text-rose-500">${displayValue}</span>
@@ -352,11 +322,14 @@
 
                     return `
                         <div class="flex flex-col gap-6">
-                            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-zinc-800/50 pb-4 gap-4">
+                            <div class="flex items-center justify-between border-b border-zinc-800/50 pb-4 gap-4">
                                 <div>
                                     <h2 class="text-2xl font-bold tracking-tight text-title flex items-center gap-2">Шаблон: ${tpl.name}</h2>
                                     <p class="text-xs text-muted mt-0.5">Правила обрабатываются строго по принципу FIFO (сверху вниз)</p>
                                 </div>
+                                <button onclick="deleteTemplate('${tpl.name}')" class="p-2 text-xs bg-rose-950/40 hover:bg-rose-900 text-rose-400 rounded-xl transition font-medium border border-rose-900/30 cursor-pointer flex items-center gap-1">
+                                     Удалить шаблон
+                                </button>
                             </div>
                             <div class="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40">
                                 ${rulesHtml}
@@ -367,11 +340,23 @@
 
             } catch (err) {
                 container.innerHTML = '<div class="text-center py-12 text-rose-400 italic">Ошибка соединения с API при загрузке шаблонов.</div>';
-                logDiagnostic('/templates', 'Блокировка сети / CORS', err.message);
             }
         }
 
-        // --- ДИНАМИЧЕСКИЙ СБОР И ВЫВОД БАНКОВ ИЗ БАЗЫ ---
+        async function deleteTemplate(name) {
+            if (!confirm(`Вы действительно хотите удалить шаблон "${name}"?`)) return;
+            try {
+                const response = await fetch(`${API_URL}/templates/${encodeURIComponent(name)}`, { method: 'DELETE' });
+                if (response.ok) {
+                    await loadAllTemplates();
+                } else {
+                    alert("Не удалось удалить шаблон");
+                }
+            } catch (err) {
+                alert("Ошибка удаления: " + err.message);
+            }
+        }
+
         async function loadAllBanks() {
             const container = document.getElementById('active-banks-container');
             try {
@@ -379,16 +364,14 @@
                 if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
                 const banks = await response.json();
 
-                logDiagnostic('/banks', 'OK', 'Данные прочитаны');
-
                 if (banks.length === 0) {
                     container.innerHTML = '<div class="text-center py-12 text-muted italic">У вас пока нет открытых счетов. Самое время поставить цель!</div>';
                     return;
                 }
 
                 container.innerHTML = banks.map(bank => {
-                    const current = bank.current_scale || 0;
-                    const target = bank.target_scale;
+                    const current = Number(bank.current_scale) || 0;
+                    const target = Number(bank.target_scale) || 1;
                     const progressPercent = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
                     const leftToAccumulate = Math.max(target - current, 0);
 
@@ -399,9 +382,14 @@
                                     <span class="bg-lime-950/30 text-lime-400 text-xs px-2.5 py-1 rounded-full font-medium border border-lime-800/30">Цель: ${bank.name}</span>
                                     <p class="text-xs text-muted mt-3 max-w-md italic">"${bank.description || 'Без мотивирующей цитаты'}"</p>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-xs text-muted">Собрано</p>
-                                    <p class="text-2xl font-black text-title">${current.toLocaleString()} <span class="text-xs font-normal text-muted">/ ${target.toLocaleString()}</span></p>
+                                <div class="text-right flex flex-col items-end gap-2">
+                                    <button onclick="deleteBank('${bank.name}')" class="p-1.5 text-[11px] bg-rose-950/30 hover:bg-rose-900 text-rose-400 rounded-lg transition border border-rose-900/20 cursor-pointer">
+                                        Удалить банк
+                                    </button>
+                                    <div class="mt-1">
+                                        <p class="text-xs text-muted">Собрано</p>
+                                        <p class="text-2xl font-black text-title">${current.toLocaleString()} <span class="text-xs font-normal text-muted">/ ${target.toLocaleString()}</span></p>
+                                    </div>
                                 </div>
                             </div>
                             <div class="w-full bg-zinc-800/20 h-3 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
@@ -416,19 +404,33 @@
                 }).join('');
 
             } catch (err) {
-                logDiagnostic('/banks', 'Блокировка сети / CORS', err.message);
+                console.error(err);
             }
         }
 
-        // --- ЛОКАЛЬНЫЙ КОНСТРУКТОР ПРАВИЛ ---
+        async function deleteBank(name) {
+            if (!confirm(`Вы действительно хотите удалить и закрыть банк "${name}"?`)) return;
+            try {
+                const response = await fetch(`${API_URL}/banks/${encodeURIComponent(name)}`, { method: 'DELETE' });
+                if (response.ok) {
+                    await loadAllBanks();
+                } else {
+                    alert("Не удалось удалить банк");
+                }
+            } catch (err) {
+                alert("Ошибка удаления банка: " + err.message);
+            }
+        }
+
         function addRuleToTempList() {
             const title = document.getElementById('rule-title').value.trim();
             const desc = document.getElementById('rule-desc').value.trim();
             const type = document.getElementById('payment-type').value;
-            const value = parseFloat(document.getElementById('rule-value').value);
+            const rawValue = document.getElementById('rule-value').value;
 
-            if (!title || isNaN(value)) {
-                alert("Заполните название правила и его числовое значение!");
+            const value = validateNumberInput(rawValue);
+            if (value === null || !title) {
+                if (!title) alert("Введите название правила!");
                 return;
             }
 
@@ -466,7 +468,6 @@
             renderTempRules();
         }
 
-        // СОХРАНЕНИЕ ШАБЛОНА НА СЕРВЕРЕ И ЕГО ПЕРЕРЕНДЕР
         async function sendTemplateToBackend() {
             const name = document.getElementById('tpl-name').value.trim();
             if (!name || currentTemplatePayments.length === 0) {
@@ -490,20 +491,20 @@
                     await loadAllTemplates();
                 } else {
                     const data = await response.json();
-                    alert("Ошибка бэка: " + data.message);
+                    alert("Ошибка бэка: " + data.detail);
                 }
             } catch (err) {
-                logDiagnostic('POST /templates', 'Ошибка отправки', err.message);
+                alert("Ошибка отправки: " + err.message);
             }
         }
 
-        // ЗАПУСК СИМУЛЯЦИИ РАСЧЕТА БЮДЖЕТА
         async function sendToCalculation() {
             const templateName = document.getElementById('calc-template-name').value.trim();
-            const amount = parseFloat(document.getElementById('calc-amount').value);
+            const rawAmount = document.getElementById('calc-amount').value;
 
-            if (!templateName || isNaN(amount)) {
-                alert("Укажите имя шаблона для расчета и сумму денег!");
+            const amount = validateNumberInput(rawAmount);
+            if (amount === null || !templateName) {
+                if (!templateName) alert("Укажите имя шаблона!");
                 return;
             }
 
@@ -515,29 +516,29 @@
                 });
                 const data = await response.json();
 
-                if (response.ok) {
+                if (response.ok && data.status !== "error") {
                     const r = data.result;
                     let report = `📊 РЕЗУЛЬТАТ РАСЧЕТА\n\nШаблон: "${r.template_name}"\n`;
-                    report += `💰 Входящий доход: ${r.initial_amount} ₸\n`;
-                    report += `📉 Свободный остаток: ${r.final_balance} ₸\n`;
+                    report += `💰 Входящий доход: ${r.initial_amount.toLocaleString()} ₸\n`;
+                    report += `📉 Свободный остаток: ${r.final_balance.toLocaleString()} ₸\n`;
                     report += `🏁 Статус: ${r.success ? "Денег хватило на все пункты FIFO!" : `Крах! Алгоритм остановился на шаге №${r.error_step}`}`;
                     alert(report);
                 } else {
-                    alert("Ошибка: " + data.message);
+                    alert("Ошибка: " + (data.message || data.detail));
                 }
             } catch (err) {
-                logDiagnostic('POST /calculate', 'Ошибка расчета', err.message);
+                alert("Ошибка: " + err.message);
             }
         }
 
-        // СОЗДАТЬ КОПИЛКУ (БАНК) И ПЕРЕЗАГРУЗИТЬ СПИСОК
         async function sendBankToBackend() {
             const name = document.getElementById('bank-name').value.trim();
-            const target = parseFloat(document.getElementById('bank-target').value);
+            const rawTarget = document.getElementById('bank-target').value;
             const desc = document.getElementById('bank-desc').value.trim();
 
-            if (!name || isNaN(target)) {
-                alert("Укажите цель счёта и необходимую сумму!");
+            const target = validateNumberInput(rawTarget);
+            if (target === null || !name) {
+                if (!name) alert("Укажите цель счёта!");
                 return;
             }
 
@@ -555,10 +556,10 @@
                     await loadAllBanks();
                 } else {
                     const data = await response.json();
-                    alert("Ошибка создания банка: " + data.message);
+                    alert("Ошибка создания банка: " + data.detail);
                 }
             } catch (err) {
-                logDiagnostic('POST /banks', 'Ошибка банка', err.message);
+                alert("Ошибка: " + err.message);
             }
         }
     </script>

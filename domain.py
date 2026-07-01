@@ -100,3 +100,73 @@ class Template:
         for payment in self.payments:
             amount = payment.apply(amount)
         return amount
+
+
+@dataclass(slots=True)
+class ApiValidator(Validator):
+    """
+    Наследник твоего Validator. Принимает dict из FastAPI,
+    проверяет структуру вручную и возвращает объекты домена.
+    """
+
+    def to_template(self) -> Template:
+        try:
+            name = str(self.value.get("name", "Шаблон"))
+            raw_payments = self.value.get("payments", [])
+
+            cleaned_payments = []
+            for p in raw_payments:
+                # Маппинг типов из вебки (fix/percentage) в доменные
+                p_type = str(p.get("type")).lower()
+                val = Decimal(str(p.get("value", 0)))
+                desc = str(p.get("description", "Пусто"))
+
+                if "percent" in p_type:
+                    cleaned_payments.append(Percentage(value=val, description=desc))
+                else:
+                    cleaned_payments.append(Fix(value=val, description=desc))
+
+            return Template(name=name, payments=cleaned_payments)
+        except (TypeError, ValueError) as e:
+            raise InvalidTypeError(f"Ошибка валидации шаблона: {e}")
+
+    def to_bank(self) -> Bank:
+        try:
+            name = str(self.value.get("name", "Piggybank"))
+            # Маппинг фронтендового current_scale в доменный amount
+            amount = Decimal(str(self.value.get("current_scale", 0)))
+            target = Decimal(str(self.value.get("target_scale", 1)))
+            desc = str(self.value.get("description", ""))
+
+            return Bank(name=name, amount=amount, target_scale=target, description=desc)
+        except (TypeError, ValueError) as e:
+            raise InvalidTypeError(f"Ошибка валидации банка: {e}")
+
+
+def execute_budget_simulation(template: Template, initial_amount: Decimal) -> dict:
+    """
+    Пошагово гонит сумму по правилам FIFO и собирает лог для фронтенда,
+    как требовалось в твоем ТЗ (обработка нехватки средств).
+    """
+    current_balance = initial_amount
+    success = True
+    error_step = None
+
+    for idx, payment in enumerate(template.payments, start=1):
+        if isinstance(payment, Fix):
+            if current_balance < payment.value:
+                success = False
+                error_step = idx
+                break
+            current_balance = payment.apply(current_balance)
+        elif isinstance(payment, Percentage):
+            # Процент берется от текущего остатка
+            current_balance = payment.apply(current_balance)
+
+    return {
+        "template_name": template.name,
+        "initial_amount": float(initial_amount),
+        "final_balance": float(current_balance),
+        "success": success,
+        "error_step": error_step
+    }
