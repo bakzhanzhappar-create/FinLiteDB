@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from decimal import Decimal
-from fastapi import Path
 
 # Импортируем твои доменные классы и хранилище
 from domain import ApiValidator, execute_budget_simulation, InvalidTypeError
-from storage import packing_to_json, json_read, template_from_json, bank_from_json
+from storage import packing_to_json, json_read, template_from_json
 
 app = FastAPI(title="Finlite API")
 
