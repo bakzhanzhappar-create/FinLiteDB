@@ -115,11 +115,11 @@ class ApiValidator(Validator):
             raw_payments = self.value.get("payments", [])
 
             cleaned_payments = []
-            for p in raw_payments:
+            for percentage in raw_payments:
                 # Маппинг типов из вебки (fix/percentage) в доменные
-                p_type = str(p.get("type")).lower()
-                val = Decimal(str(p.get("value", 0)))
-                desc = str(p.get("description", "Пусто"))
+                p_type = str(percentage.get("type")).lower()
+                val = Decimal(str(percentage.get("value", 0)))
+                desc = str(percentage.get("description", "Пусто"))
 
                 if "percent" in p_type:
                     cleaned_payments.append(Percentage(value=val, description=desc))
