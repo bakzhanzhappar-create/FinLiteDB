@@ -127,8 +127,8 @@ class ApiValidator(Validator):
                     cleaned_payments.append(Fix(value=val, description=desc))
 
             return Template(name=name, payments=cleaned_payments)
-        except (TypeError, ValueError) as e:
-            raise InvalidTypeError(f"Ошибка валидации шаблона: {e}")
+        except (TypeError, ValueError):
+            raise InvalidTypeError(f"Ошибка валидации шаблона:")
 
     def to_bank(self) -> Bank:
         try:
@@ -139,8 +139,8 @@ class ApiValidator(Validator):
             desc = str(self.value.get("description", ""))
 
             return Bank(name=name, amount=amount, target_scale=target, description=desc)
-        except (TypeError, ValueError) as e:
-            raise InvalidTypeError(f"Ошибка валидации банка: {e}")
+        except (TypeError, ValueError):
+            raise InvalidTypeError(f"Ошибка валидации банка:")
 
 
 def execute_budget_simulation(template: Template, initial_amount: Decimal) -> dict:

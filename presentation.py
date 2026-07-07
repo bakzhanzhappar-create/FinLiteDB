@@ -36,10 +36,10 @@ async def create_template(request: Request):
         # Сохраняем в JSON через твой storage.py
         packing_to_json(template_object)
         return {"status": "success", "message": "Template saved"}
-    except InvalidTypeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal error: {e}")
+    except InvalidTypeError as error_type:
+        raise HTTPException(status_code=400, detail=str(error_type))
+    except Exception:
+        raise HTTPException(status_code=500, detail=f"Internal error:")
 
 
 @app.get("/api/banks")
@@ -83,8 +83,8 @@ async def calculate_budget(request: Request):
         calculation_result = execute_budget_simulation(template, initial_money)
 
         return {"status": "success", "result": calculation_result}
-    except Exception as e:
-        return {"status": "error", "message": f"Ошибка расчета: {str(e)}"}
+    except Exception as error_source:
+        return {"status": "error", "message": f"Ошибка расчета: {str(error_source)}"}
 
 
 @app.delete("/api/templates/{name}")
