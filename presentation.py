@@ -21,8 +21,8 @@ app.add_middleware(
 @app.get("/api/templates")
 async def get_templates():
     # Фронтенд ожидает список, берем из storage
-    data = json_read()
-    return data.get("templates", [])
+    template_data = json_read()
+    return template_data.get("templates", [])
 
 
 @app.post("/api/templates")
@@ -44,8 +44,8 @@ async def create_template(request: Request):
 
 @app.get("/api/banks")
 async def get_banks():
-    data = json_read()
-    banks = data.get("banks", [])
+    bank_data = json_read()
+    banks = bank_data.get("banks", [])
     # Фронт ждет поле current_scale, маппим его обратно из amount перед отдачей
     for bank in banks:
         bank["current_scale"] = bank.pop("amount", 0)
@@ -61,22 +61,22 @@ async def create_bank(request: Request):
 
         packing_to_json(bank_object)
         return {"status": "success", "message": "Bank opened"}
-    except InvalidTypeError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except InvalidTypeError as error_type:
+        raise HTTPException(status_code=400, detail=str(error_type))
 
 
 @app.post("/api/calculate")
 async def calculate_budget(request: Request):
     try:
         raw_data = await request.json()
-        tpl_name = raw_data.get("template_name")
+        template_name = raw_data.get("template_name")
         amount_raw = raw_data.get("amount")
 
-        if not tpl_name or amount_raw is None:
+        if not template_name or amount_raw is None:
             raise HTTPException(status_code=400, detail="Missing template name or amount")
 
         # Достаем шаблон из базы через твой storage.py
-        template = template_from_json(tpl_name)
+        template = template_from_json(template_name)
         initial_money = Decimal(str(amount_raw))
 
         # Запускаем расчет логики FIFO
@@ -99,8 +99,8 @@ async def delete_template(name: str):
         import storage
         storage.json_write(data)
         return {"status": "success", "message": f"Template {name} deleted"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as http_error:
+        raise HTTPException(status_code=500, detail=str(http_error))
 
 @app.delete("/api/banks/{name:path}")
 async def delete_bank(name: str):
@@ -117,5 +117,5 @@ async def delete_bank(name: str):
         import storage
         storage.json_write(data)
         return {"status": "success", "message": f"Bank {clean_name} closed"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as http_error:
+        raise HTTPException(status_code=500, detail=str(http_error))
