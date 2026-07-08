@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from decimal import Decimal
 
 # Импортируем твои доменные классы и хранилище
-from domain import ApiValidator, execute_budget_simulation, InvalidTypeError
+from domain import APIValidator, execute_budget_simulation, InvalidTypeError
 from storage import packing_to_json, json_read, template_from_json
 
 app = FastAPI(title="Finlite API")
@@ -30,7 +30,7 @@ async def create_template(request: Request):
     try:
         raw_data = await request.json()
         # Пропускаем через кастомный доменный валидатор вместо Pydantic
-        validator = ApiValidator(value=raw_data, target_type=dict)
+        validator = APIValidator(value=raw_data, target_type=dict)
         template_object = validator.to_template()
 
         # Сохраняем в JSON через твой storage.py

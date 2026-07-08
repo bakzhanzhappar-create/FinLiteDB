@@ -74,7 +74,7 @@ class Template:
 
 
 @dataclass(slots=True)
-class ApiValidator(Validator):
+class APIValidator(Validator):
     """
     Наследник твоего Validator. Принимает dict из FastAPI,
     проверяет структуру вручную и возвращает объекты домена.
