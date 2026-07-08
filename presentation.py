@@ -42,29 +42,6 @@ async def create_template(request: Request):
         raise HTTPException(status_code=500, detail=f"Internal error:")
 
 
-@app.get("/api/banks")
-async def get_banks():
-    bank_data = json_read()
-    banks = bank_data.get("banks", [])
-    # Фронт ждет поле current_scale, маппим его обратно из amount перед отдачей
-    for bank in banks:
-        bank["current_scale"] = bank.pop("amount", 0)
-    return banks
-
-
-@app.post("/api/banks")
-async def create_bank(request: Request):
-    try:
-        raw_data = await request.json()
-        validator = ApiValidator(value=raw_data, target_type=dict)
-        bank_object = validator.to_bank()
-
-        packing_to_json(bank_object)
-        return {"status": "success", "message": "Bank opened"}
-    except InvalidTypeError as error_type:
-        raise HTTPException(status_code=400, detail=str(error_type))
-
-
 @app.post("/api/calculate")
 async def calculate_budget(request: Request):
     try:
@@ -102,27 +79,4 @@ async def delete_template(name: str):
     except Exception as http_error:
         raise HTTPException(status_code=500, detail=str(http_error))
 
-@app.delete("/api/banks/{name:path}")
-async def delete_bank(name: str):
-    try:
-        # На всякий случай декодируем имя, если прилетели url-символы
-        import urllib.parse
-        clean_name = urllib.parse.unquote(name).strip()
-
-        data = json_read()
-        # Фильтруем список, убирая пробелы при сравнении
-        updated_banks = [b for b in data.get("banks", []) if b.get("name", "").strip() != clean_name]
-        data["banks"] = updated_banks
-
-        import storage
-        storage.json_write(data)
-        return {"status": "success", "message": f"Bank {clean_name} closed"}
-    except Exception as http_error:
-        raise HTTPException(status_code=500, detail=str(http_error))
-
-#крч тут нету кнопки добавить денег в банке. это надо размыслить, как и откуда будут приходить деньги, хотя мне больше кажется что это идея шлак, типо смекаешь в чем смысл проекции банков если основная идея автоматизировать затраты, то есть фича ради фичи
-#как и откуда будут приходить деньги
-#добавить кнопки добавить денег в банке
-
-
-#или удалить банки вообще, оставив простенькую но практичную программу
+#удалил банки теперь без банков сохраняя исходную суть пет проекта

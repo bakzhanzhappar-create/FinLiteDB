@@ -44,35 +44,6 @@ class Fix(Payment):
 
 
 @dataclass(slots=True)
-class Bank:
-    amount: Decimal=Decimal('0')
-    description: str = field(default="")
-    target_scale: Decimal=Decimal('1')
-    name: str=field(default="Piggybank")
-
-    def __post_init__(self) -> None:
-        if self.amount < 0:
-            raise InvalidPaymentError("Amount must be positive")
-
-        if self.target_scale < 0:
-            raise InvalidPaymentError("Target scale must be positive")
-
-
-    def add_money(self, amount: Decimal) -> Decimal:
-        self.amount +=amount
-        self.amount=self.amount.quantize(Decimal('1.00'), rounding=ROUND_HALF_UP)
-        return self.amount
-
-    def withdraw(self, amount: Decimal)-> Decimal:
-        if 0 < amount <= self.amount:
-            self.amount -= amount
-        return self.amount
-
-    def is_target_success(self)-> bool:
-        return self.target_scale<=self.amount
-
-
-@dataclass(slots=True)
 class Validator:
     value: str | Decimal
     target_type: type = Decimal
@@ -130,18 +101,6 @@ class ApiValidator(Validator):
         except (TypeError, ValueError):
             raise InvalidTypeError(f"Ошибка валидации шаблона:")
 
-    def to_bank(self) -> Bank:
-        try:
-            name = str(self.value.get("name", "Piggybank"))
-            # Маппинг фронтендового current_scale в доменный amount
-            amount = Decimal(str(self.value.get("current_scale", 0)))
-            target = Decimal(str(self.value.get("target_scale", 1)))
-            desc = str(self.value.get("description", ""))
-
-            return Bank(name=name, amount=amount, target_scale=target, description=desc)
-        except (TypeError, ValueError):
-            raise InvalidTypeError(f"Ошибка валидации банка:")
-
 
 def execute_budget_simulation(template: Template, initial_amount: Decimal) -> dict:
     """
@@ -170,4 +129,3 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
         "success": success,
         "error_step": error_step
     }
-#

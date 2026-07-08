@@ -1,7 +1,7 @@
 import json
 from dataclasses import asdict
 from decimal import Decimal
-from domain import Template, Validator, Fix, Percentage, Bank
+from domain import Template, Validator, Fix, Percentage
 
 
 class NotFoundError(Exception):
@@ -26,12 +26,12 @@ def json_read():
             json_content = user_file.read().strip()
 
             if not json_content:
-                return {"templates": [], "banks": []}
+                return {"templates": []}
 
             return json.loads(json_content)
 
     except (FileNotFoundError, json.JSONDecodeError):
-        return {"templates": [], "banks": []}
+        return {"templates": []}
 
 
 def packing_to_json(test):
@@ -56,15 +56,7 @@ def packing_to_json(test):
         from_json['templates'] = correct_templates
 
     else:
-        correct_banks = list()
-
-        for bank in from_json['banks']:
-            if bank.get('name') != packed['name']:
-
-                correct_banks.append(bank)
-        correct_banks.append(packed)
-
-        from_json['banks'] = correct_banks
+        raise NotFoundError("Template didnt found")
 
     json_write(from_json)
     print("done")
@@ -108,41 +100,9 @@ def template_from_json(target_name):
 
 def json_list():
     templates_list = json_read().get('templates', list())
-    banks_list = json_read().get('banks', list())
 
-    if not templates_list or not banks_list:
-        raise NotFoundError(f"File doesnt exist")
+    if not templates_list:
+        raise NotFoundError(f"Template or file doesnt exist")
 
     for exist_list in templates_list:
         print(f"- Шаблоны: {exist_list.get('name')}")
-
-    for exist_list in banks_list:
-        print(f"- Банки: {exist_list.get('name')}")
-
-
-def bank_from_json(target_name):
-    banks_list=json_read().get('banks', list())
-
-    target_bank = None
-
-    for bank in banks_list:
-        if bank.get('name') == target_name:
-            target_bank = bank
-            break
-
-    if target_bank is None:
-        raise NotFoundError(f"Ur asked {target_name} doesnt exist")
-
-    for bank_dict in banks_list:
-
-        raw_amount = bank_dict['amount']
-        raw_target_scale= bank_dict['target_scale']
-
-        cleaned_amount = Validator(value=raw_amount, target_type=Decimal)
-        cleaned_target_scale = Validator(value=raw_target_scale, target_type=Decimal)
-
-        decimal_amount = cleaned_amount.value
-        decimal_target_scale = cleaned_target_scale.value
-
-    return Bank(name=bank_dict.get('name'), amount=decimal_amount, target_scale=decimal_target_scale, description=bank_dict.get('description'))
-#

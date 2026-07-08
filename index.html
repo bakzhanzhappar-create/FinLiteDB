@@ -130,8 +130,7 @@
             <span class="text-xl font-bold tracking-wider text-title">Finlite <span class="accent-lime">DB</span></span>
         </div>
         <div class="flex items-center gap-6 text-sm">
-            <button onclick="switchTab('templates-page')" id="btn-templates" class="text-lime-400 font-semibold cursor-pointer transition">Шаблоны</button>
-            <button onclick="switchTab('banks-page')" id="btn-banks" class="text-muted hover:text-lime-400 cursor-pointer transition">Банки (Копилки)</button>
+            <span id="btn-templates" class="text-lime-400 font-semibold select-none">Шаблоны распределения</span>
 
             <button onclick="toggleTheme()" class="ml-2 p-2 rounded-xl bg-zinc-800/20 hover:bg-zinc-800/50 cursor-pointer text-lg transition" title="Сменить тему">
                 🌗
@@ -214,43 +213,6 @@
             </section>
         </div>
 
-        <div id="banks-page" class="tab-content hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <section class="lg:col-span-2 flex flex-col gap-6">
-                <div>
-                    <h2 class="text-2xl font-bold mb-1 tracking-tight text-title flex items-center gap-2">Активные Банки (Копилки)</h2>
-                    <p class="text-xs text-muted mb-4">Ваши финансовые цели и прогресс накоплений</p>
-                </div>
-
-                <div class="flex flex-col gap-4" id="active-banks-container">
-                    <div class="text-center py-12 text-muted italic">Загрузка активных банковских счетов...</div>
-                </div>
-            </section>
-
-            <section class="lg:col-span-1">
-                <div class="glass-card p-6 rounded-2xl sticky top-6">
-                    <h2 class="text-xl font-bold mb-4 text-title flex items-center gap-2">Создать новый Банк</h2>
-
-                    <div class="flex flex-col gap-4">
-                        <div>
-                            <label class="block text-xs text-muted mb-1">Название банка (Цель)</label>
-                            <input type="text" id="bank-name" placeholder="Например: Новый ПК" class="input-dark">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-muted mb-1">Целевая сумма накопления</label>
-                            <input type="text" id="bank-target" placeholder="45000" class="input-dark">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-muted mb-1">Мотивирующая цитата</label>
-                            <textarea id="bank-desc" placeholder="Once i have a dream..." class="input-dark h-20 resize-none"></textarea>
-                        </div>
-                        <button onclick="sendBankToBackend()" class="w-full btn-gradient py-3 rounded-xl cursor-pointer mt-2">
-                             Открыть счет
-                        </button>
-                    </div>
-                </div>
-            </section>
-        </div>
-
     </main>
 
     <script>
@@ -259,16 +221,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAllTemplates();
-            loadAllBanks();
         });
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-
-            document.getElementById('btn-templates').className = tabId === 'templates-page' ? 'text-lime-400 font-semibold cursor-pointer' : 'text-muted hover:text-lime-400 cursor-pointer';
-            document.getElementById('btn-banks').className = tabId === 'banks-page' ? 'text-lime-400 font-semibold cursor-pointer' : 'text-muted hover:text-lime-400 cursor-pointer';
-        }
 
         function toggleTheme() {
             const body = document.body;
@@ -354,71 +307,6 @@
                 }
             } catch (err) {
                 alert("Ошибка удаления: " + err.message);
-            }
-        }
-
-        async function loadAllBanks() {
-            const container = document.getElementById('active-banks-container');
-            try {
-                const response = await fetch(`${API_URL}/banks`);
-                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-                const banks = await response.json();
-
-                if (banks.length === 0) {
-                    container.innerHTML = '<div class="text-center py-12 text-muted italic">У вас пока нет открытых счетов. Самое время поставить цель!</div>';
-                    return;
-                }
-
-                container.innerHTML = banks.map(bank => {
-                    const current = Number(bank.current_scale) || 0;
-                    const target = Number(bank.target_scale) || 1;
-                    const progressPercent = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
-                    const leftToAccumulate = Math.max(target - current, 0);
-
-                    return `
-                        <div class="glass-card p-6 rounded-3xl relative overflow-hidden">
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <span class="bg-lime-950/30 text-lime-400 text-xs px-2.5 py-1 rounded-full font-medium border border-lime-800/30">Цель: ${bank.name}</span>
-                                    <p class="text-xs text-muted mt-3 max-w-md italic">"${bank.description || 'Без мотивирующей цитаты'}"</p>
-                                </div>
-                                <div class="text-right flex flex-col items-end gap-2">
-                                    <button onclick="deleteBank('${bank.name}')" class="p-1.5 text-[11px] bg-rose-950/30 hover:bg-rose-900 text-rose-400 rounded-lg transition border border-rose-900/20 cursor-pointer">
-                                        Удалить банк
-                                    </button>
-                                    <div class="mt-1">
-                                        <p class="text-xs text-muted">Собрано</p>
-                                        <p class="text-2xl font-black text-title">${current.toLocaleString()} <span class="text-xs font-normal text-muted">/ ${target.toLocaleString()}</span></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="w-full bg-zinc-800/20 h-3 rounded-full overflow-hidden p-0.5 border border-zinc-700/30">
-                                <div class="h-full rounded-full" style="width: ${progressPercent}%; background: linear-gradient(90deg, #163a21 0%, #a3e635 100%);"></div>
-                            </div>
-                            <div class="flex justify-between items-center mt-3 text-xs text-muted">
-                                <span>Прогресс: ${progressPercent}%</span>
-                                <span>Осталось собрать: ${leftToAccumulate.toLocaleString()} ₸</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        async function deleteBank(name) {
-            if (!confirm(`Вы действительно хотите удалить и закрыть банк "${name}"?`)) return;
-            try {
-                const response = await fetch(`${API_URL}/banks/${encodeURIComponent(name)}`, { method: 'DELETE' });
-                if (response.ok) {
-                    await loadAllBanks();
-                } else {
-                    alert("Не удалось удалить банк");
-                }
-            } catch (err) {
-                alert("Ошибка удаления банка: " + err.message);
             }
         }
 
@@ -525,38 +413,6 @@
                     alert(report);
                 } else {
                     alert("Ошибка: " + (data.message || data.detail));
-                }
-            } catch (err) {
-                alert("Ошибка: " + err.message);
-            }
-        }
-
-        async function sendBankToBackend() {
-            const name = document.getElementById('bank-name').value.trim();
-            const rawTarget = document.getElementById('bank-target').value;
-            const desc = document.getElementById('bank-desc').value.trim();
-
-            const target = validateNumberInput(rawTarget);
-            if (target === null || !name) {
-                if (!name) alert("Укажите цель счёта!");
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/banks`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: name, target_scale: target, current_scale: 0, description: desc })
-                });
-
-                if (response.ok) {
-                    document.getElementById('bank-name').value = '';
-                    document.getElementById('bank-target').value = '';
-                    document.getElementById('bank-desc').value = '';
-                    await loadAllBanks();
-                } else {
-                    const data = await response.json();
-                    alert("Ошибка создания банка: " + data.detail);
                 }
             } catch (err) {
                 alert("Ошибка: " + err.message);
