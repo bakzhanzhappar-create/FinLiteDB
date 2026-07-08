@@ -170,3 +170,4 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
         "success": success,
         "error_step": error_step
     }
+#

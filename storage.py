@@ -145,3 +145,4 @@ def bank_from_json(target_name):
         decimal_target_scale = cleaned_target_scale.value
 
     return Bank(name=bank_dict.get('name'), amount=decimal_amount, target_scale=decimal_target_scale, description=bank_dict.get('description'))
+#
