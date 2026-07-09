@@ -75,10 +75,7 @@ class Template:
 
 @dataclass(slots=True)
 class APIValidator(Validator):
-    """
-    Наследник твоего Validator. Принимает dict из FastAPI,
-    проверяет структуру вручную и возвращает объекты домена.
-    """
+    #принимает словарь от фастапи, проверяет структуру и возвращает объекты домена
 
     def to_template(self) -> Template:
         try:
@@ -87,7 +84,6 @@ class APIValidator(Validator):
 
             cleaned_payments = []
             for percentage in raw_payments:
-                # Маппинг типов из вебки (fix/percentage) в доменные
                 p_type = str(percentage.get("type")).lower()
                 val = Decimal(str(percentage.get("value", 0)))
                 desc = str(percentage.get("description", "Пусто"))
@@ -103,10 +99,6 @@ class APIValidator(Validator):
 
 
 def execute_budget_simulation(template: Template, initial_amount: Decimal) -> dict:
-    """
-    Пошагово гонит сумму по правилам FIFO и собирает лог для фронтенда,
-    как требовалось в твоем ТЗ (обработка нехватки средств).
-    """
     current_balance = initial_amount
     success = True
     error_step = None
@@ -119,7 +111,6 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
                 break
             current_balance = payment.apply(current_balance)
         elif isinstance(payment, Percentage):
-            # Процент берется от текущего остатка
             current_balance = payment.apply(current_balance)
 
     return {
