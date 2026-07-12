@@ -406,10 +406,10 @@
 
                 if (response.ok && data.status !== "error") {
                     const r = data.result;
-                    let report = `📊 РЕЗУЛЬТАТ РАСЧЕТА\n\nШаблон: "${r.template_name}"\n`;
-                    report += `💰 Входящий доход: ${r.initial_amount.toLocaleString()} ₸\n`;
-                    report += `📉 Свободный остаток: ${r.final_balance.toLocaleString()} ₸\n`;
-                    report += `🏁 Статус: ${r.success ? "Денег хватило на все пункты FIFO!" : `Крах! Алгоритм остановился на шаге №${r.error_step}`}`;
+                    let report = ` РЕЗУЛЬТАТ РАСЧЕТА\n\nШаблон: "${r.template_name}"\n`;
+                    report += ` Входящий доход: ${r.initial_amount.toLocaleString()} ₸\n`;
+                    report += ` Свободный остаток: ${r.final_balance.toLocaleString()} ₸\n`;
+                    report += ` Статус: ${r.success ? "Денег хватило на все пункты FIFO!" : `Крах! Алгоритм остановился на шаге №${r.error_step}`}`;
                     alert(report);
                 } else {
                     alert("Ошибка: " + (data.message || data.detail));
