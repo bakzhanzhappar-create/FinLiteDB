@@ -21,5 +21,7 @@ CREATE TABLE IF NOT EXISTS payments_table(
     )
 
 """)
-
+cursor.executr("""
+INSERT INTO 
+""")
 db.close()
