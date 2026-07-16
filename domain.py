@@ -62,11 +62,6 @@ class Template:
     name: str = field(default="Шаблон")
     payments: list[Fix | Percentage] = field(default_factory=list)
 
-    # мешает для append, вроде некритично если шаблон пустой
-    # def __post_init__(self) -> None:
-    #     if not self.payments:
-    #         raise ValueError("Payments list cannot be empty")
-
     def apply(self, amount: Decimal) -> Decimal:
         for payment in self.payments:
             amount = payment.apply(amount)

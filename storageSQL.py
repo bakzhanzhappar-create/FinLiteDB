@@ -1,7 +1,6 @@
 import sqlite3
 
 db = sqlite3.connect('bagatest.db')
-
 cursor= db.cursor()
 
 cursor.execute("""
@@ -15,13 +14,14 @@ cursor.execute("""
 CREATE TABLE IF NOT EXISTS payments_table(
     template_id INT NOT NULL,
     payment_type TEXT NOT NULL,
-    value FLOAT NOT NULL,
+    value REAL NOT NULL,
     description TEXT,
     FOREIGN KEY (template_id) REFERENCES template_table(id)
     )
 
 """)
-cursor.executr("""
-INSERT INTO 
-""")
+try:
+    db.execute("BEGIN TRANSACTION")
+    cursor.execute(""" INSERT INTO template_table(id, name) VALUES (1, 'example_name')""")
+
 db.close()
