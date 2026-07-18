@@ -2,6 +2,7 @@ import sqlite3
 
 db = sqlite3.connect('bagatest.db')
 cursor= db.cursor()
+cursor.execute("PRAGMA foreign_keys = ON;")
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS template_table(
@@ -22,6 +23,8 @@ CREATE TABLE IF NOT EXISTS payments_table(
 """)
 try:
     db.execute("BEGIN TRANSACTION")
-    cursor.execute(""" INSERT INTO template_table(id, name) VALUES (1, 'example_name')""")
+    cursor.execute(""" INSERT INTO template_table(name) VALUES ('example_name')""")
 
 db.close()
+#оказывается на sqlite3, вместо float используется real
+#не надо юзать autoincrement, sqlite3 сам добавляет номер id по существующих аттрибутов таблиц
