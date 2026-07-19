@@ -18,7 +18,6 @@ app.add_middleware(
 
 @app.get("/api/templates")
 async def get_templates():
-    # Фронтенд ожидает список, берем из storage
     template_data = json_read()
     return template_data.get("templates", [])
 
