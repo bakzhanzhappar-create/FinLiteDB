@@ -6,7 +6,7 @@ cursor.execute("PRAGMA foreign_keys = ON;")
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS template_table(
-    id INT PRIMARY KEY NOT NULL,
+    id INTEGER PRIMARY KEY,
     name TEXT NOT NULL
 )
 """)
@@ -22,9 +22,22 @@ CREATE TABLE IF NOT EXISTS payments_table(
 
 """)
 try:
-    db.execute("BEGIN TRANSACTION")
-    cursor.execute(""" INSERT INTO template_table(name) VALUES ('example_name')""")
+    with db:
+        cursor.execute(""" INSERT INTO template_table(name) VALUES ('example_name')""")
 
-db.close()
+        generated_id=cursor.lastrowid
+
+        cursor.execute(""" INSERT INTO payments_table(template_id, payment_type, value, description) VALUES (?, 'f', 12134, 'nigga nigga nigga')""", (generated_id,))
+
+        print("Template table created successfully")
+
+except sqlite3.Error as error:
+    print(f"Something went wrong: {error}")
+
+finally:
+    cursor.close()
+    db.close()
+
 #оказывается на sqlite3, вместо float используется real
 #не надо юзать autoincrement, sqlite3 сам добавляет номер id по существующих аттрибутов таблиц
+ #Откат (rollback) произойдет автоматически благодаря контекстному менеджеру 'with db'
