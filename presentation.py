@@ -21,7 +21,6 @@ async def get_templates():
     template_data = json_read()
     return template_data.get("templates", [])
 
-
 @app.post("/api/templates")
 async def create_template(request: Request):
     try:
@@ -61,7 +60,6 @@ async def calculate_budget(request: Request):
 async def delete_template(name: str):
     try:
         data = json_read()
-        # Фильтруем список, оставляя все шаблоны КРОМЕ удаляемого
         updated_templates = [t for t in data.get("templates", []) if t.get("name") != name]
         data["templates"] = updated_templates
 
