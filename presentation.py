@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from decimal import Decimal
 
 from domain import APIValidator, execute_budget_simulation, InvalidTypeError
@@ -15,6 +16,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/")
+async def read_index():
+    return FileResponse("index.html")
 
 @app.get("/api/templates")
 async def get_templates():
