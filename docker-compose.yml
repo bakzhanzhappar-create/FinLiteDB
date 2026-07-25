@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: finlite_app
+    container_name: finlite
     ports:
       - "8000:8000"
     volumes:
