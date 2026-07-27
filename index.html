@@ -406,17 +406,66 @@
 
                 if (response.ok && data.status !== "error") {
                     const r = data.result;
-                    let report = ` РЕЗУЛЬТАТ РАСЧЕТА\n\nШаблон: "${r.template_name}"\n`;
-                    report += ` Входящий доход: ${r.initial_amount.toLocaleString()} ₸\n`;
-                    report += ` Свободный остаток: ${r.final_balance.toLocaleString()} ₸\n`;
-                    report += ` Статус: ${r.success ? "Денег хватило на все пункты FIFO!" : `Крах! Алгоритм остановился на шаге №${r.error_step}`}`;
-                    alert(report);
+                    renderCalculationOutput(r);
                 } else {
                     alert("Ошибка: " + (data.message || data.detail));
                 }
             } catch (err) {
-                alert("Ошибка: " + err.message);
+                alert("Ошибка сети: " + err.message);
             }
+        }
+
+        function renderCalculationOutput(r) {
+            const container = document.getElementById('active-templates-container');
+
+            const oldResult = document.getElementById('calc-output-card');
+            if (oldResult) oldResult.remove();
+
+            const historyItems = (r.history || []).map(item => {
+                let statusBadge = '';
+                let borderStyle = 'border-zinc-800/60';
+
+                if (item.status === 'ok') {
+                    statusBadge = '<span class="text-[10px] text-emerald-400 font-semibold">Успешно</span>';
+                } else if (item.status === 'insufficient_funds') {
+                    statusBadge = '<span class="text-[10px] text-rose-400 font-semibold">Ошибка: Не хватило средств</span>';
+                    borderStyle = 'border-rose-500/50 bg-rose-950/20';
+                } else if (item.status === 'zero_balance_stop') {
+                    statusBadge = '<span class="text-[10px] text-amber-400 font-semibold">Остановка: Баланс 0 ₸</span>';
+                    borderStyle = 'border-amber-500/50 bg-amber-950/20';
+                }
+
+                return `
+                    <div class="glass-card p-3 rounded-xl border ${borderStyle} flex flex-col gap-1 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-title">${item.step}. ${item.description}</span>
+                            ${statusBadge}
+                        </div>
+                        <div class="flex justify-between items-center text-muted text-[11px] mt-1">
+                            <span>Вычитаемая сумма: <b class="text-rose-400">${item.display_deducted}</b></span>
+                            <span>Остаток: <b class="text-lime-400">${Number(item.balance_after).toLocaleString()} ₸</b></span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const outputHtml = `
+                <div id="calc-output-card" class="glass-card p-6 rounded-2xl border-l-4 ${r.success ? 'border-l-lime-400' : 'border-l-rose-500'} mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-title">Детализация: ${r.template_name}</h3>
+                            <p class="text-xs text-muted">Исходный баланс: ${Number(r.initial_amount).toLocaleString()} ₸ | Остаток: ${Number(r.final_balance).toLocaleString()} ₸</p>
+                        </div>
+                        <button onclick="document.getElementById('calc-output-card').remove()" class="text-muted hover:text-title text-sm cursor-pointer">✕ Закрыть</button>
+                    </div>
+
+                    <div class="flex flex-col gap-2 mt-4">
+                        ${historyItems}
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('afterbegin', outputHtml);
         }
     </script>
 </body>

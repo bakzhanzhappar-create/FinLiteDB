@@ -70,7 +70,6 @@ class Template:
 
 @dataclass(slots=True)
 class APIValidator(Validator):
-    #принимает словарь от фастапи, проверяет структуру и возвращает объекты домена
 
     def to_template(self) -> Template:
         try:
@@ -97,21 +96,77 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
     current_balance = initial_amount
     success = True
     error_step = None
+    history = []
 
     for idx, payment in enumerate(template.payments, start=1):
+        if current_balance == Decimal('0'):
+            success = False
+            error_step = idx
+            history.append({
+                "step": idx,
+                "description": payment.description,
+                "type": "percentage" if isinstance(payment, Percentage) else "fix",
+                "display_deducted": f"{payment.value}% (0 ₸)" if isinstance(payment,
+                                                                            Percentage) else f"{payment.value} ₸",
+                "deducted_amount": 0.0,
+                "balance_after": 0.0,
+                "status": "zero_balance_stop"
+            })
+            break
+
         if isinstance(payment, Fix):
+            deducted = payment.value
+            balance_after = current_balance - deducted
+
+            # Сценарий #2: не хватило частично на этом шаге (ушли в минус)
             if current_balance < payment.value:
                 success = False
                 error_step = idx
+                history.append({
+                    "step": idx,
+                    "description": payment.description,
+                    "type": "fix",
+                    "display_deducted": f"{deducted} ₸",
+                    "deducted_amount": float(deducted),
+                    "balance_after": float(balance_after),
+                    "status": "insufficient_funds"
+                })
                 break
-            current_balance = payment.apply(current_balance)
+
+            current_balance = balance_after
+            history.append({
+                "step": idx,
+                "description": payment.description,
+                "type": "fix",
+                "display_deducted": f"{deducted} ₸",
+                "deducted_amount": float(deducted),
+                "balance_after": float(current_balance),
+                "status": "ok"
+            })
+
         elif isinstance(payment, Percentage):
-            current_balance = payment.apply(current_balance)
+            balance_after = payment.apply(current_balance)
+            deducted = current_balance - balance_after
+
+            # В скобках выводим конкретную сумму от введенного остатка
+            display_str = f"{payment.value}% ({float(deducted):,.2f} ₸)"
+
+            current_balance = balance_after
+            history.append({
+                "step": idx,
+                "description": payment.description,
+                "type": "percentage",
+                "display_deducted": display_str,
+                "deducted_amount": float(deducted),
+                "balance_after": float(current_balance),
+                "status": "ok"
+            })
 
     return {
         "template_name": template.name,
         "initial_amount": float(initial_amount),
         "final_balance": float(current_balance),
         "success": success,
-        "error_step": error_step
+        "error_step": error_step,
+        "history": history
     }
