@@ -1,14 +1,23 @@
 import sqlite3
 from decimal import Decimal
 from domain import Template, Validator, Fix, Percentage
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+
+DB_PATH = (BASE_DIR / "data" / "finlite.db").resolve()
+
 
 class NotFoundError(Exception):
     ...
 
-db_name = 'finlite.db'
 
 def get_db_connection():
-    db = sqlite3.connect(db_name)
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"Connecting to {DB_PATH.as_posix()}", flush=True)
+
+    db = sqlite3.connect(DB_PATH)
     db.execute("PRAGMA foreign_keys = ON;")
     return db
 
@@ -50,9 +59,6 @@ def packing_to_sql(template_object: Template):
 
     try:
         with db:
-            # 1. Защита от дубликатов: если шаблон с таким именем есть, удаляем его.
-            # Благодаря ON DELETE CASCADE (или ручной очистке), нам нужно удалить старый шаблон.
-            # Сначала удалим связанные платежи, чтобы не ругался Foreign Key
             cursor.execute("DELETE FROM payments_table WHERE template_id = (SELECT id FROM template_table WHERE name = ?)",(template_object.name,))
             cursor.execute("DELETE FROM template_table WHERE name = ?", (template_object.name,))
 
