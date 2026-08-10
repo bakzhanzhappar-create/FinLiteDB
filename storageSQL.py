@@ -150,3 +150,43 @@ def sql_list():
     finally:
         cursor.close()
         db.close()
+#допили это
+def get_template():
+    db = get_db_connection()
+    cursor = db.cursor()
+    try:
+
+        cursor.execute("""SELECT id, name FROM template_table""")
+        templates_rows = cursor.fetchall()
+
+        result_templates = list()
+
+        for template_id, template_name in templates_rows:
+            cursor.execute(
+                """SELECT payment_type, value, description FROM payments_table WHERE template_id = ?""",
+                (template_id,)
+            )
+            payments_rows = cursor.fetchall()
+
+            payments_list = list()
+            for payment_type, value, description in payments_rows:
+                payments_list.append({
+                    "__type__": payment_type,
+                    "value": value,
+                    "description": description
+                })
+
+            result_templates.append({
+                "name": template_name,
+                "payments": payments_list
+            })
+
+        return result_templates
+
+    except sqlite3.Error as error:
+        raise HTTPException(status_code=500, detail=f"Ошибка БД при чтении списка: {str(error)}")
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if db is not None:
+            db.close()

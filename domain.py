@@ -66,7 +66,8 @@ class Template:
         for payment in self.payments:
             amount = payment.apply(amount)
         return amount
-
+#Создать функцию которой позволяет частично удалять специфичные куски созданного Шаблона
+    # def partially_delete(self) -> Template:
 
 @dataclass(slots=True)
 class APIValidator(Validator):
@@ -92,6 +93,7 @@ class APIValidator(Validator):
             raise InvalidTypeError(f"Ошибка валидации шаблона:")
 
 
+#С этим чето надо делать
 def execute_budget_simulation(template: Template, initial_amount: Decimal) -> dict:
     current_balance = initial_amount
     success = True

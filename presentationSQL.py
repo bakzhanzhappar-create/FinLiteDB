@@ -2,7 +2,6 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from decimal import Decimal
-import sqlite3
 
 from domain import APIValidator, execute_budget_simulation, InvalidTypeError
 from storageSQL import packing_to_sql, template_from_sql, get_db_connection, init_db
@@ -25,6 +24,7 @@ async def read_index():
 
 @app.get("/api/templates")
 async def get_templates():
+#Весь этот запрос ДОЛЖЕН БЫТЬ в storageSQL, здесь только результат от функции
     db = get_db_connection()
     cursor = db.cursor()
     try:
