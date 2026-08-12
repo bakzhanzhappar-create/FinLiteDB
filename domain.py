@@ -67,12 +67,18 @@ class Template:
             amount = payment.apply(amount)
         return amount
 
-
     def partially_delete(self, index) -> list:
         if self.payments[index] in self.payments:
             del self.payments[index]
         return self.payments
 
+    def append_payment(self, payments) -> list:
+        self.payments.append(payments)
+        return self.payments
+
+#допилить. По логике, сперва появляется в нужной позиции шаблона, затем у предыдущего(это в обязанности другого модуля) удаляется только что переехавшая кусок шаблона(payment)
+    # def insert_to_template(self, payments)
+    #     Template.append_payment()
 
 @dataclass(slots=True)
 class APIValidator(Validator):
@@ -177,16 +183,3 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
         "error_step": error_step,
         "history": history
     }
-
-scholarship= Decimal('52367')
-t=Template(
-    payments=[
-        Fix(Decimal('1320'), description="за проезд"),
-        Fix(Decimal('5790'), description="за тариф"),
-        Fix(Decimal('5000'), description="сестренке"),
-        Fix(Decimal('28000'), description="на все про все"),
-        Fix(Decimal('12262'), description="самоналог"),
-    ])
-print(t.payments)
-t.partially_delete(1)
-print(t.payments)
