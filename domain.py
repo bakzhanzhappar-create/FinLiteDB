@@ -66,8 +66,13 @@ class Template:
         for payment in self.payments:
             amount = payment.apply(amount)
         return amount
-#Создать функцию которой позволяет частично удалять специфичные куски созданного Шаблона
-    # def partially_delete(self) -> Template:
+
+
+    def partially_delete(self, index) -> list:
+        if self.payments[index] in self.payments:
+            del self.payments[index]
+        return self.payments
+
 
 @dataclass(slots=True)
 class APIValidator(Validator):
@@ -172,3 +177,16 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
         "error_step": error_step,
         "history": history
     }
+
+scholarship= Decimal('52367')
+t=Template(
+    payments=[
+        Fix(Decimal('1320'), description="за проезд"),
+        Fix(Decimal('5790'), description="за тариф"),
+        Fix(Decimal('5000'), description="сестренке"),
+        Fix(Decimal('28000'), description="на все про все"),
+        Fix(Decimal('12262'), description="самоналог"),
+    ])
+print(t.payments)
+t.partially_delete(1)
+print(t.payments)

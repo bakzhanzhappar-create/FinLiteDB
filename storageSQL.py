@@ -51,7 +51,7 @@ def init_db():
 
 
 def packing_to_sql(template_object: Template):
-    print(f"Unpacking template: {template_object.name}")
+    print(f"Packing template: {template_object.name}")
     print("SAVING TO SQLITE... ")
 
     db = get_db_connection()
@@ -152,7 +152,7 @@ def sql_list():
         db.close()
 
 
-def get_templates():
+def get_templates()-> list:
     db = get_db_connection()
     cursor = db.cursor()
     try:
@@ -193,13 +193,10 @@ def get_templates():
             db.close()
 
 
-def delete_template(name: str):
-    db = None
-    cursor = None
+def delete_template(name):
+    db = get_db_connection()
+    cursor = db.cursor()
     try:
-        db = get_db_connection()
-        cursor = db.cursor()
-
         with db:
             cursor.execute(
                 """DELETE FROM payments_table WHERE template_id = (SELECT id FROM template_table WHERE name = ?)""",
@@ -215,3 +212,21 @@ def delete_template(name: str):
             cursor.close()
         if db is not None:
             db.close()
+
+
+def part_delete(target_name: str, index:int):
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    try:
+        target_template=template_from_sql(target_name)
+
+        target_template.partially_delete(index)
+
+        packing_to_sql(target_template)
+    except sqlite3.Error as error:
+        print(f"Database error during read: {error}")
+        raise error
+    finally:
+        cursor.close()
+        db.close()
