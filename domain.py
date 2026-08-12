@@ -120,7 +120,7 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
             deducted = payment.value
             balance_after = current_balance - deducted
 
-            # Сценарий #2: не хватило частично на этом шаге (ушли в минус
+            # Сценарий #2: не хватило частично на этом шаге (ушли в минус)
             if current_balance < payment.value:
                 success = False
                 error_step = idx

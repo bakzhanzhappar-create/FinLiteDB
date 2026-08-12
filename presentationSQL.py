@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from decimal import Decimal
 
 from domain import APIValidator, execute_budget_simulation, InvalidTypeError
-from storageSQL import packing_to_sql, template_from_sql, get_db_connection, init_db
+from storageSQL import packing_to_sql, template_from_sql, delete_template, init_db, get_templates
 
 app = FastAPI(title="Finlite API (SQL Version)")
 
@@ -23,46 +23,8 @@ async def read_index():
     return FileResponse("index.html")
 
 @app.get("/api/templates")
-async def get_templates():
-#Весь этот запрос ДОЛЖЕН БЫТЬ в storageSQL, здесь только результат от функции
-    db = get_db_connection()
-    cursor = db.cursor()
-    try:
-
-        cursor.execute("""SELECT id, name FROM template_table""")
-        templates_rows = cursor.fetchall()
-
-        result_templates = list()
-
-        for template_id, template_name in templates_rows:
-            cursor.execute(
-                """SELECT payment_type, value, description FROM payments_table WHERE template_id = ?""",
-                (template_id,)
-            )
-            payments_rows = cursor.fetchall()
-
-            payments_list = list()
-            for payment_type, value, description in payments_rows:
-                payments_list.append({
-                    "__type__": payment_type,
-                    "value": value,
-                    "description": description
-                })
-
-            result_templates.append({
-                "name": template_name,
-                "payments": payments_list
-            })
-
-        return result_templates
-
-    except sqlite3.Error as error:
-        raise HTTPException(status_code=500, detail=f"Ошибка БД при чтении списка: {str(error)}")
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if db is not None:
-            db.close()
+async def show_templates():
+    return get_templates()
 
 
 @app.post("/api/templates")
@@ -102,24 +64,4 @@ async def calculate_budget(request: Request):
 
 @app.delete("/api/templates/{name}")
 async def delete_template(name: str):
-    db = None
-    cursor = None
-    try:
-        db = get_db_connection()
-        cursor = db.cursor()
-
-        with db:
-            cursor.execute(
-                """DELETE FROM payments_table WHERE template_id = (SELECT id FROM template_table WHERE name = ?)""",
-                (name,)
-            )
-            cursor.execute("""DELETE FROM template_table WHERE name = ?""", (name,))
-
-        return {"status": "success", "message": f"Template {name} deleted from SQL Database"}
-    except sqlite3.Error as http_error:
-        raise HTTPException(status_code=500, detail=f"Ошибка БД при удалении: {str(http_error)}")
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if db is not None:
-            db.close()
+    return delete_template(name)

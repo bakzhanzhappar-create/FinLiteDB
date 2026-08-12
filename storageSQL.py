@@ -150,8 +150,9 @@ def sql_list():
     finally:
         cursor.close()
         db.close()
-#допили это
-def get_template():
+
+
+def get_templates():
     db = get_db_connection()
     cursor = db.cursor()
     try:
@@ -184,7 +185,31 @@ def get_template():
         return result_templates
 
     except sqlite3.Error as error:
-        raise HTTPException(status_code=500, detail=f"Ошибка БД при чтении списка: {str(error)}")
+        raise NotFoundError(f"Ошибка БД при чтении списка: {str(error)}")
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if db is not None:
+            db.close()
+
+
+def delete_template(name: str):
+    db = None
+    cursor = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+
+        with db:
+            cursor.execute(
+                """DELETE FROM payments_table WHERE template_id = (SELECT id FROM template_table WHERE name = ?)""",
+                (name,)
+            )
+            cursor.execute("""DELETE FROM template_table WHERE name = ?""", (name,))
+
+        return {"status": "success", "message": f"Template {name} deleted from SQL Database"}
+    except sqlite3.Error as error:
+        raise NotFoundError(f"Ошибка БД при удалении: {str(error)}")
     finally:
         if cursor is not None:
             cursor.close()
