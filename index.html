@@ -118,6 +118,39 @@
             outline: none;
             border-color: #a3e635;
         }
+
+        /* --- Стили для плавного Drag & Drop --- */
+        .draggable-item {
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s ease, opacity 0.25s ease;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        .draggable-item.dragging {
+            opacity: 0.35;
+            transform: scale(0.98);
+        }
+
+        /* Посадочная точка (зеленый пунктир) */
+        .drop-placeholder {
+            border: 2px dashed #a3e635;
+            background: rgba(163, 230, 53, 0.06);
+            border-radius: 0.75rem;
+            height: 60px;
+            transition: all 0.2s ease-in-out;
+            animation: pulse-border 1.5s infinite alternate;
+        }
+        .theme-light .drop-placeholder {
+            border-color: #4d7c0f;
+            background: rgba(77, 124, 15, 0.08);
+        }
+
+        @keyframes pulse-border {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body class="theme-dark relative min-h-screen pb-12">
@@ -219,6 +252,12 @@
         const API_URL = 'http://127.0.0.1:8000/api';
         let currentTemplatePayments = [];
 
+        // Переменные состояния Drag & Drop
+        let draggedItem = null;
+        let originIndex = null;
+        let templateName = null;
+        let placeholder = null;
+
         window.addEventListener('DOMContentLoaded', () => {
             loadAllTemplates();
         });
@@ -258,8 +297,12 @@
                         const borderHighlight = isPercent ? 'border-l-2 border-l-rose-500/40' : '';
 
                         return `
-                            <div class="glass-card p-4 rounded-xl flex justify-between items-center relative pl-12 ${borderHighlight}">
-                                <div class="absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400">${idx + 1}</div>
+                            <div draggable="true"
+                                 data-index="${idx}"
+                                 data-template="${tpl.name}"
+                                 class="draggable-item glass-card p-4 rounded-xl flex justify-between items-center relative pl-12 ${borderHighlight}">
+
+                                <div class="rule-badge absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 transition-colors duration-200">${idx + 1}</div>
 
                                 <div class="flex-1 pr-4">
                                     <div class="flex items-center gap-2">
@@ -268,9 +311,20 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-4">
-                                    <span class="text-base font-bold text-rose-500">${displayValue}</span>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-base font-bold text-rose-500 mr-1">${displayValue}</span>
 
+                                    <!-- Кнопка перемещения (Drag Handle) со стрелками Вверх/Вниз -->
+                                    <button title="Зажмите и потяните для перемещения"
+                                            class="drag-handle p-2 rounded-lg bg-zinc-800/30 hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 transition cursor-grab flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="8 7 12 3 16 7"></polyline>
+                                            <polyline points="8 17 12 21 16 17"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="21"></line>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Кнопка удаления -->
                                     <button onclick="deleteRule('${tpl.name}', ${idx})"
                                             title="Удалить правило"
                                             class="p-2 rounded-lg bg-rose-950/20 hover:bg-rose-900/50 text-rose-400/70 hover:text-rose-400 border border-rose-900/20 hover:border-rose-800/40 transition cursor-pointer flex items-center justify-center">
@@ -298,15 +352,155 @@
                                      Удалить весь шаблон
                                 </button>
                             </div>
-                            <div class="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40">
+                            <div class="rules-container flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40" data-template="${tpl.name}">
                                 ${rulesHtml}
                             </div>
                         </div>
                     `;
                 }).join('');
 
+                initDragAndDrop();
+
             } catch (err) {
                 container.innerHTML = '<div class="text-center py-12 text-rose-400 italic">Ошибка соединения с API при загрузке шаблонов.</div>';
+            }
+        }
+
+        /* --- Логика Drag and Drop --- */
+        function initDragAndDrop() {
+            const containers = document.querySelectorAll('.rules-container');
+
+            // Заранее готовим зеленый элемент-плейсхолдер
+            placeholder = document.createElement('div');
+            placeholder.className = 'drop-placeholder';
+
+            containers.forEach(container => {
+                const items = container.querySelectorAll('.draggable-item');
+
+                items.forEach(item => {
+                    item.addEventListener('dragstart', (e) => {
+                        draggedItem = item;
+                        originIndex = parseInt(item.getAttribute('data-index'));
+                        templateName = item.getAttribute('data-template');
+
+                        setTimeout(() => item.classList.add('dragging'), 0);
+                    });
+
+                    item.addEventListener('dragend', async () => {
+                        item.classList.remove('dragging');
+
+                        if (placeholder.parentNode) {
+                            // Вычисляем целевой индекс по месту приземления плейсхолдера
+                            const parent = placeholder.parentNode;
+                            const children = Array.from(parent.children).filter(c => c !== placeholder && c !== draggedItem);
+
+                            let targetIndex = 0;
+                            const placeholderIndex = Array.from(parent.children).indexOf(placeholder);
+
+                            // Рассчитываем итоговый индекс элемента с учетом изъятия из прошлого места
+                            for (let i = 0; i < parent.children.length; i++) {
+                                if (parent.children[i] === placeholder) {
+                                    targetIndex = placeholderIndex > originIndex ? targetIndex : targetIndex;
+                                    break;
+                                }
+                                if (parent.children[i] !== draggedItem) {
+                                    targetIndex++;
+                                }
+                            }
+
+                            placeholder.parentNode.replaceChild(draggedItem, placeholder);
+
+                            // Обновляем нумерацию бейджей
+                            updateIndexes(parent);
+
+                            // Фиксируем исходный и целевой индексы в консоли
+                            console.log(`[Drag & Drop] Шаблон: "${templateName}" | Из позиции: ${originIndex} -> В позицию: ${targetIndex}`);
+
+                            // Отправляем запрос на сервер, если позиция изменилась
+                            if (originIndex !== targetIndex) {
+                                await sendCustomizeRequest(templateName, originIndex, targetIndex);
+                            }
+                        }
+
+                        draggedItem = null;
+                        originIndex = null;
+                        templateName = null;
+                    });
+                });
+
+                // Обработчик движения над списком правил одного шаблона
+                container.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+
+                    // Запрещаем перетягивание между разными шаблонами
+                    if (!draggedItem || container.getAttribute('data-template') !== templateName) return;
+
+                    const afterElement = getDragAfterElement(container, e.clientY);
+
+                    if (afterElement == null) {
+                        container.appendChild(placeholder);
+                    } else {
+                        container.insertBefore(placeholder, afterElement);
+                    }
+
+                    // Обновляем визуальный номер в бейдже тащимого карточкой элемента
+                    const currentPlaceholderIndex = Array.from(container.children).indexOf(placeholder);
+                    const badge = draggedItem.querySelector('.rule-badge');
+                    if (badge) {
+                        badge.textContent = currentPlaceholderIndex + 1;
+                        badge.classList.add('bg-lime-400', 'text-zinc-950');
+                        badge.classList.remove('bg-zinc-800', 'text-zinc-400');
+                    }
+                });
+            });
+        }
+
+        // Поиск элемента, перед которым нужно вставить плейсхолдер
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable-item:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Пересчет визуальных номеров карточек после приземления
+        function updateIndexes(container) {
+            const items = container.querySelectorAll('.draggable-item');
+            items.forEach((item, idx) => {
+                item.setAttribute('data-index', idx);
+                const badge = item.querySelector('.rule-badge');
+                if (badge) {
+                    badge.textContent = idx + 1;
+                    badge.classList.remove('bg-lime-400', 'text-zinc-950');
+                    badge.classList.add('bg-zinc-800', 'text-zinc-400');
+                }
+            });
+        }
+
+        // Запрос к новому эндпоинту кастомизации
+        async function sendCustomizeRequest(name, originIndex, targetIndex) {
+            try {
+                const url = `${API_URL}/templates/${encodeURIComponent(name)}?origin_index=${originIndex}&target_index=${targetIndex}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    alert("Ошибка кастомизации: " + (data.detail || response.statusText));
+                    await loadAllTemplates(); // Откатываем UI при ошибке
+                }
+            } catch (err) {
+                alert(" Ошибка сети при перестановке правил: " + err.message);
+                await loadAllTemplates();
             }
         }
 
