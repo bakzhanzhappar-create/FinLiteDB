@@ -230,3 +230,21 @@ def part_delete(target_name: str, index:int):
     finally:
         cursor.close()
         db.close()
+
+def template_customize(target_name: str, origin_index:int, target_index: int):
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    try:
+        target_template=template_from_sql(target_name)
+
+        if target_template.payments[origin_index] in target_template.payments:
+            target_template.move_payment(target_index,target_template.payments[origin_index])
+
+        packing_to_sql(target_template)
+    except sqlite3.Error as error:
+        print(f"Database error during read: {error}")
+        raise error
+    finally:
+        cursor.close()
+        db.close()

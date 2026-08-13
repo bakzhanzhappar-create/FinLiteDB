@@ -72,13 +72,16 @@ class Template:
             del self.payments[index]
         return self.payments
 
-    def append_payment(self, payments) -> list:
-        self.payments.append(payments)
+    def append_payment(self, payment) -> list:
+        self.payments.append(payment)
         return self.payments
 
 #допилить. По логике, сперва появляется в нужной позиции шаблона, затем у предыдущего(это в обязанности другого модуля) удаляется только что переехавшая кусок шаблона(payment)
-    # def insert_to_template(self, payments)
-    #     Template.append_payment()
+    def move_payment(self, index, payment) -> list:
+        if payment in self.payments:
+            self.payments.remove(payment)
+            self.payments.insert(index, payment)
+        return self.payments
 
 @dataclass(slots=True)
 class APIValidator(Validator):

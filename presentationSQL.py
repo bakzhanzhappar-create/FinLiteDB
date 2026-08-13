@@ -63,7 +63,7 @@ async def calculate_budget(request: Request):
 
 
 @app.delete("/api/templates/{name}")
-async def delete_templates(name: str, index:int):
+async def delete_templates(name: str):
     return delete_template(name)
 
 @app.delete("/api/templates/{name}")
