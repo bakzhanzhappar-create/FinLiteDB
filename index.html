@@ -133,18 +133,32 @@
             transform: scale(0.98);
         }
 
-        /* Посадочная точка (зеленый пунктир) */
+        /* Посадочная точка (Базовый стили) */
         .drop-placeholder {
-            border: 2px dashed #a3e635;
-            background: rgba(163, 230, 53, 0.06);
             border-radius: 0.75rem;
             height: 60px;
             transition: all 0.2s ease-in-out;
             animation: pulse-border 1.5s infinite alternate;
         }
-        .theme-light .drop-placeholder {
+
+        /* Внутри своего шаблона -> Зеленый цвет */
+        .drop-placeholder.internal {
+            border: 2px dashed #a3e635;
+            background: rgba(163, 230, 53, 0.08);
+        }
+        .theme-light .drop-placeholder.internal {
             border-color: #4d7c0f;
             background: rgba(77, 124, 15, 0.08);
+        }
+
+        /* При перетаскивании в ДРУГОЙ шаблон -> Желтый/Янтарный цвет */
+        .drop-placeholder.foreign {
+            border: 2px dashed #f59e0b;
+            background: rgba(245, 158, 11, 0.12);
+        }
+        .theme-light .drop-placeholder.foreign {
+            border-color: #d97706;
+            background: rgba(217, 119, 6, 0.12);
         }
 
         @keyframes pulse-border {
@@ -189,7 +203,8 @@
                         <div class="flex flex-col gap-3">
                             <div>
                                 <label class="block text-[11px] text-muted mb-1">Название шаблона в системе</label>
-                                <input type="text" id="calc-template-name" placeholder="Например: Стипендия" class="input-dark py-2 text-sm">
+                                <input type="text" id="calc-template-name" list="templates-list" placeholder="Выберите или введите название..." class="input-dark py-2 text-sm" autocomplete="off">
+                                <datalist id="templates-list"></datalist>
                             </div>
                             <div>
                                 <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
@@ -255,7 +270,7 @@
         // Переменные состояния Drag & Drop
         let draggedItem = null;
         let originIndex = null;
-        let templateName = null;
+        let donorTemplateName = null;
         let placeholder = null;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -277,12 +292,23 @@
             return Number(clean);
         }
 
+        function populateTemplatesDropdown(templates) {
+            const datalist = document.getElementById('templates-list');
+            if (!datalist) return;
+
+            datalist.innerHTML = templates
+                .map(tpl => `<option value="${tpl.name}"></option>`)
+                .join('');
+        }
+
         async function loadAllTemplates() {
             const container = document.getElementById('active-templates-container');
             try {
                 const response = await fetch(`${API_URL}/templates`);
                 if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
                 const templates = await response.json();
+
+                populateTemplatesDropdown(templates);
 
                 if (templates.length === 0) {
                     container.innerHTML = '<div class="text-center py-12 text-muted italic">В базе нет созданных шаблонов. Сделайте первый на панели справа!</div>';
@@ -314,7 +340,7 @@
                                 <div class="flex items-center gap-3">
                                     <span class="text-base font-bold text-rose-500 mr-1">${displayValue}</span>
 
-                                    <!-- Кнопка перемещения (Drag Handle) со стрелками Вверх/Вниз -->
+                                    <!-- Иконка перемещения -->
                                     <button title="Зажмите и потяните для перемещения"
                                             class="drag-handle p-2 rounded-lg bg-zinc-800/30 hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 transition cursor-grab flex items-center justify-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -352,7 +378,7 @@
                                      Удалить весь шаблон
                                 </button>
                             </div>
-                            <div class="rules-container flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40" data-template="${tpl.name}">
+                            <div class="rules-container flex flex-col gap-3 min-h-[50px] relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40" data-template="${tpl.name}">
                                 ${rulesHtml}
                             </div>
                         </div>
@@ -366,11 +392,10 @@
             }
         }
 
-        /* --- Логика Drag and Drop --- */
+        /* --- Логика Drag and Drop с поддержкой миграции между шаблонами --- */
         function initDragAndDrop() {
             const containers = document.querySelectorAll('.rules-container');
 
-            // Заранее готовим зеленый элемент-плейсхолдер
             placeholder = document.createElement('div');
             placeholder.className = 'drop-placeholder';
 
@@ -381,7 +406,7 @@
                     item.addEventListener('dragstart', (e) => {
                         draggedItem = item;
                         originIndex = parseInt(item.getAttribute('data-index'));
-                        templateName = item.getAttribute('data-template');
+                        donorTemplateName = item.getAttribute('data-template');
 
                         setTimeout(() => item.classList.add('dragging'), 0);
                     });
@@ -390,50 +415,67 @@
                         item.classList.remove('dragging');
 
                         if (placeholder.parentNode) {
-                            // Вычисляем целевой индекс по месту приземления плейсхолдера
-                            const parent = placeholder.parentNode;
-                            const children = Array.from(parent.children).filter(c => c !== placeholder && c !== draggedItem);
+                            const targetContainer = placeholder.parentNode;
+                            const targetTemplateName = targetContainer.getAttribute('data-template');
 
+                            // Вычисляем итоговую позицию карточки
                             let targetIndex = 0;
-                            const placeholderIndex = Array.from(parent.children).indexOf(placeholder);
+                            const childrenArr = Array.from(targetContainer.children);
 
-                            // Рассчитываем итоговый индекс элемента с учетом изъятия из прошлого места
-                            for (let i = 0; i < parent.children.length; i++) {
-                                if (parent.children[i] === placeholder) {
-                                    targetIndex = placeholderIndex > originIndex ? targetIndex : targetIndex;
-                                    break;
-                                }
-                                if (parent.children[i] !== draggedItem) {
+                            for (let i = 0; i < childrenArr.length; i++) {
+                                if (childrenArr[i] === placeholder) break;
+                                if (childrenArr[i] !== draggedItem) {
                                     targetIndex++;
                                 }
                             }
 
                             placeholder.parentNode.replaceChild(draggedItem, placeholder);
 
-                            // Обновляем нумерацию бейджей
-                            updateIndexes(parent);
+                            // Изменяем привязку шаблона на карточке
+                            draggedItem.setAttribute('data-template', targetTemplateName);
 
-                            // Фиксируем исходный и целевой индексы в консоли
-                            console.log(`[Drag & Drop] Шаблон: "${templateName}" | Из позиции: ${originIndex} -> В позицию: ${targetIndex}`);
+                            // Пересчитываем визуальные бейджи вовлеченных контейнеров
+                            updateIndexes(targetContainer);
+                            const donorContainer = document.querySelector(`.rules-container[data-template="${donorTemplateName}"]`);
+                            if (donorContainer && donorContainer !== targetContainer) {
+                                updateIndexes(donorContainer);
+                            }
 
-                            // Отправляем запрос на сервер, если позиция изменилась
-                            if (originIndex !== targetIndex) {
-                                await sendCustomizeRequest(templateName, originIndex, targetIndex);
+                            // Логика вызова бэкенда
+                            if (donorTemplateName === targetTemplateName) {
+                                // Кастомизация внутри ОДНОГО шаблона
+                                console.log(`[Внутри шаблона] "${donorTemplateName}" | ${originIndex} -> ${targetIndex}`);
+                                if (originIndex !== targetIndex) {
+                                    await sendCustomizeRequest(donorTemplateName, originIndex, targetIndex);
+                                }
+                            } else {
+                                // Иммиграция В ДРУГОЙ шаблон
+                                console.log(`[Иммиграция] "${donorTemplateName}" (индекс ${originIndex}) -> "${targetTemplateName}" (индекс ${targetIndex})`);
+                                await sendImmigrationRequest(donorTemplateName, originIndex, targetTemplateName, targetIndex);
                             }
                         }
 
+                        // Сброс состояния
                         draggedItem = null;
                         originIndex = null;
-                        templateName = null;
+                        donorTemplateName = null;
+                        placeholder.className = 'drop-placeholder';
                     });
                 });
 
-                // Обработчик движения над списком правил одного шаблона
+                // Обработка полета мыши над контейнером
                 container.addEventListener('dragover', (e) => {
                     e.preventDefault();
+                    if (!draggedItem) return;
 
-                    // Запрещаем перетягивание между разными шаблонами
-                    if (!draggedItem || container.getAttribute('data-template') !== templateName) return;
+                    const currentTargetTemplate = container.getAttribute('data-template');
+
+                    // Меняем цвет посадочной точки (зеленый - внутри, желтый - чужой шаблон)
+                    if (currentTargetTemplate === donorTemplateName) {
+                        placeholder.className = 'drop-placeholder internal';
+                    } else {
+                        placeholder.className = 'drop-placeholder foreign';
+                    }
 
                     const afterElement = getDragAfterElement(container, e.clientY);
 
@@ -443,19 +485,21 @@
                         container.insertBefore(placeholder, afterElement);
                     }
 
-                    // Обновляем визуальный номер в бейдже тащимого карточкой элемента
+                    // Подсвечиваем будущий номер правила прямо в бейдже
                     const currentPlaceholderIndex = Array.from(container.children).indexOf(placeholder);
                     const badge = draggedItem.querySelector('.rule-badge');
                     if (badge) {
                         badge.textContent = currentPlaceholderIndex + 1;
-                        badge.classList.add('bg-lime-400', 'text-zinc-950');
-                        badge.classList.remove('bg-zinc-800', 'text-zinc-400');
+                        if (currentTargetTemplate === donorTemplateName) {
+                            badge.className = 'rule-badge absolute left-4 w-5 h-5 rounded-full bg-lime-400 text-zinc-950 font-bold text-center leading-5 text-[10px] transition-colors duration-200';
+                        } else {
+                            badge.className = 'rule-badge absolute left-4 w-5 h-5 rounded-full bg-amber-400 text-zinc-950 font-bold text-center leading-5 text-[10px] transition-colors duration-200';
+                        }
                     }
                 });
             });
         }
 
-        // Поиск элемента, перед которым нужно вставить плейсхолдер
         function getDragAfterElement(container, y) {
             const draggableElements = [...container.querySelectorAll('.draggable-item:not(.dragging)')];
 
@@ -470,7 +514,6 @@
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
-        // Пересчет визуальных номеров карточек после приземления
         function updateIndexes(container) {
             const items = container.querySelectorAll('.draggable-item');
             items.forEach((item, idx) => {
@@ -478,13 +521,12 @@
                 const badge = item.querySelector('.rule-badge');
                 if (badge) {
                     badge.textContent = idx + 1;
-                    badge.classList.remove('bg-lime-400', 'text-zinc-950');
-                    badge.classList.add('bg-zinc-800', 'text-zinc-400');
+                    badge.className = 'rule-badge absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 transition-colors duration-200';
                 }
             });
         }
 
-        // Запрос к новому эндпоинту кастомизации
+        // Запрос для перемещения внутри одного шаблона
         async function sendCustomizeRequest(name, originIndex, targetIndex) {
             try {
                 const url = `${API_URL}/templates/${encodeURIComponent(name)}?origin_index=${originIndex}&target_index=${targetIndex}`;
@@ -496,10 +538,30 @@
                 if (!response.ok) {
                     const data = await response.json();
                     alert("Ошибка кастомизации: " + (data.detail || response.statusText));
-                    await loadAllTemplates(); // Откатываем UI при ошибке
+                    await loadAllTemplates();
                 }
             } catch (err) {
-                alert(" Ошибка сети при перестановке правил: " + err.message);
+                alert("Ошибка сети при перестановке правил: " + err.message);
+                await loadAllTemplates();
+            }
+        }
+
+        // Новый запрос для ИММИГРАЦИИ правила в чужой шаблон
+        async function sendImmigrationRequest(donorName, originIndex, targetTemplate, targetIndex) {
+            try {
+                const url = `${API_URL}/templates/${encodeURIComponent(donorName)}?donour_name=${encodeURIComponent(donorName)}&origin_index=${originIndex}&target_template=${encodeURIComponent(targetTemplate)}&target_index=${targetIndex}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    alert("Ошибка при перемещении правила в другой шаблон: " + (data.detail || response.statusText));
+                    await loadAllTemplates();
+                }
+            } catch (err) {
+                alert("Ошибка сети при иммиграции правила: " + err.message);
                 await loadAllTemplates();
             }
         }

@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from decimal import Decimal
 
 from domain import APIValidator, execute_budget_simulation, InvalidTypeError
-from storageSQL import packing_to_sql, template_from_sql, delete_template, init_db, get_templates, part_delete, template_customize
+from storageSQL import packing_to_sql, template_from_sql, delete_template, init_db, get_templates, part_delete, template_customize, from_template
 
 app = FastAPI(title="Finlite API (SQL Version)")
 
@@ -73,3 +73,7 @@ async def delete_partly(name:str, index:int):
 @app.post("/api/templates/{name}")
 async def customize_template(name:str, origin_index:int, target_index:int):
     return template_customize(name, origin_index, target_index)
+
+@app.post("/api/templates/{name}")
+async def payment_immigration(donour_name:str, origin_index:int, target_template: str, target_index:int):
+    return from_template(donour_name, origin_index, target_template, target_index)

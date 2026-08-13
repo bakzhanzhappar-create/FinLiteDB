@@ -248,3 +248,25 @@ def template_customize(target_name: str, origin_index:int, target_index: int):
     finally:
         cursor.close()
         db.close()
+
+def from_template(donour_name:str, origin_index:int, target_name:str, target_index:int):
+    db = get_db_connection()
+    cursor = db.cursor()
+
+    try:
+        donour_template=template_from_sql(donour_name)
+        target_template=template_from_sql(target_name)
+
+        if donour_template.payments[origin_index] in donour_template.payments:
+            target_template.append_payment(donour_template.payments[origin_index])
+
+            target_template.move_payment(origin_index, target_template.payments[target_index])
+
+            part_delete(donour_name, origin_index)
+        packing_to_sql(target_template)
+    except sqlite3.Error as error:
+        print(f"Database error during read: {error}")
+        raise error
+    finally:
+        cursor.close()
+        db.close()
