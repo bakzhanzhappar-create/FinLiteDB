@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from decimal import Decimal
 
-from domain import APIValidator, execute_budget_simulation, InvalidTypeError
+from domain import APIValidator, execute_budget_simulation, InvalidTypeError, Percentage
 from storageSQL import packing_to_sql, template_from_sql, delete_template, init_db, get_templates, part_delete, template_customize, from_template
 
 app = FastAPI(title="Finlite API (SQL Version)")
@@ -55,9 +55,34 @@ async def calculate_budget(request: Request):
         template = template_from_sql(template_name)
         initial_money = Decimal(str(amount_raw))
 
-        calculation_result = execute_budget_simulation(template, initial_money)
+        domain_result = execute_budget_simulation(template, initial_money)
 
-        return {"status": "success", "result": calculation_result}
+        history = []
+        for item in domain_result["history"]:
+            payment = item["payment"]
+            is_percentage = isinstance(payment, Percentage)
+
+            history.append({
+                "step": item["step"],
+                "description": payment.description,
+                "type": "percentage" if is_percentage else "fix",
+                "value": float(payment.value),
+                "deducted_amount": float(item["deducted_amount"]),
+                "balance_after": float(item["balance_after"]),
+                "status": item["status"]
+            })
+
+        response_payload = {
+            "template_name": domain_result["template_name"],
+            "initial_amount": float(domain_result["initial_amount"]),
+            "final_balance": float(domain_result["final_balance"]),
+            "success": domain_result["success"],
+            "error_step": domain_result["error_step"],
+            "history": history
+        }
+
+        return {"status": "success", "result": response_payload}
+
     except Exception as error_source:
         return {"status": "error", "message": f"Ошибка расчета: {str(error_source)}"}
 

@@ -273,6 +273,15 @@
         let donorTemplateName = null;
         let placeholder = null;
 
+        // Форматирование сумм валюты на стороне UI (чистая презентация)
+        const formatMoney = (amount) => {
+            return new Intl.NumberFormat('ru-KZ', {
+                style: 'currency',
+                currency: 'KZT',
+                maximumFractionDigits: 2
+            }).format(amount);
+        };
+
         window.addEventListener('DOMContentLoaded', () => {
             loadAllTemplates();
         });
@@ -319,7 +328,7 @@
                     const rulesHtml = tpl.payments.map((p, idx) => {
                         const isPercent = p.__type__ === 'Percentage';
                         const badgeText = isPercent ? 'Процент' : 'Фикс';
-                        const displayValue = isPercent ? `-${p.value}%` : `-${Number(p.value).toLocaleString()} ₸`;
+                        const displayValue = isPercent ? `-${p.value}%` : `-${formatMoney(p.value)}`;
                         const borderHighlight = isPercent ? 'border-l-2 border-l-rose-500/40' : '';
 
                         return `
@@ -418,7 +427,6 @@
                             const targetContainer = placeholder.parentNode;
                             const targetTemplateName = targetContainer.getAttribute('data-template');
 
-                            // Вычисляем итоговую позицию карточки
                             let targetIndex = 0;
                             const childrenArr = Array.from(targetContainer.children);
 
@@ -430,32 +438,23 @@
                             }
 
                             placeholder.parentNode.replaceChild(draggedItem, placeholder);
-
-                            // Изменяем привязку шаблона на карточке
                             draggedItem.setAttribute('data-template', targetTemplateName);
 
-                            // Пересчитываем визуальные бейджи вовлеченных контейнеров
                             updateIndexes(targetContainer);
                             const donorContainer = document.querySelector(`.rules-container[data-template="${donorTemplateName}"]`);
                             if (donorContainer && donorContainer !== targetContainer) {
                                 updateIndexes(donorContainer);
                             }
 
-                            // Логика вызова бэкенда
                             if (donorTemplateName === targetTemplateName) {
-                                // Кастомизация внутри ОДНОГО шаблона
-                                console.log(`[Внутри шаблона] "${donorTemplateName}" | ${originIndex} -> ${targetIndex}`);
                                 if (originIndex !== targetIndex) {
                                     await sendCustomizeRequest(donorTemplateName, originIndex, targetIndex);
                                 }
                             } else {
-                                // Иммиграция В ДРУГОЙ шаблон
-                                console.log(`[Иммиграция] "${donorTemplateName}" (индекс ${originIndex}) -> "${targetTemplateName}" (индекс ${targetIndex})`);
                                 await sendImmigrationRequest(donorTemplateName, originIndex, targetTemplateName, targetIndex);
                             }
                         }
 
-                        // Сброс состояния
                         draggedItem = null;
                         originIndex = null;
                         donorTemplateName = null;
@@ -463,14 +462,12 @@
                     });
                 });
 
-                // Обработка полета мыши над контейнером
                 container.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     if (!draggedItem) return;
 
                     const currentTargetTemplate = container.getAttribute('data-template');
 
-                    // Меняем цвет посадочной точки (зеленый - внутри, желтый - чужой шаблон)
                     if (currentTargetTemplate === donorTemplateName) {
                         placeholder.className = 'drop-placeholder internal';
                     } else {
@@ -485,7 +482,6 @@
                         container.insertBefore(placeholder, afterElement);
                     }
 
-                    // Подсвечиваем будущий номер правила прямо в бейдже
                     const currentPlaceholderIndex = Array.from(container.children).indexOf(placeholder);
                     const badge = draggedItem.querySelector('.rule-badge');
                     if (badge) {
@@ -526,7 +522,6 @@
             });
         }
 
-        // Запрос для перемещения внутри одного шаблона
         async function sendCustomizeRequest(name, originIndex, targetIndex) {
             try {
                 const url = `${API_URL}/templates/${encodeURIComponent(name)}?origin_index=${originIndex}&target_index=${targetIndex}`;
@@ -546,7 +541,6 @@
             }
         }
 
-        // Новый запрос для ИММИГРАЦИИ правила в чужой шаблон
         async function sendImmigrationRequest(donorName, originIndex, targetTemplate, targetIndex) {
             try {
                 const url = `${API_URL}/templates/${encodeURIComponent(donorName)}?donour_name=${encodeURIComponent(donorName)}&origin_index=${originIndex}&target_template=${encodeURIComponent(targetTemplate)}&target_index=${targetIndex}`;
@@ -704,6 +698,7 @@
             }
         }
 
+        // --- Вся логика отображения результатов расчета перенесена на фронтенд ---
         function renderCalculationOutput(r) {
             const container = document.getElementById('active-templates-container');
 
@@ -713,7 +708,9 @@
             const historyItems = (r.history || []).map(item => {
                 let statusBadge = '';
                 let borderStyle = 'border-zinc-800/60';
+                let displayDeducted = '';
 
+                // Определение текста статуса
                 if (item.status === 'ok') {
                     statusBadge = '<span class="text-[10px] text-emerald-400 font-semibold">Успешно</span>';
                 } else if (item.status === 'insufficient_funds') {
@@ -724,6 +721,17 @@
                     borderStyle = 'border-amber-500/50 bg-amber-950/20';
                 }
 
+                // Форматирование вычитаемой суммы (используется если бэкенд не прислал display_deducted)
+                if (item.display_deducted) {
+                    displayDeducted = item.display_deducted;
+                } else if (item.status === 'zero_balance_stop' && item.type === 'percentage') {
+                    displayDeducted = `${item.value}% (0 ₸)`;
+                } else if (item.type === 'percentage') {
+                    displayDeducted = `${item.value}% (${formatMoney(item.deducted_amount)})`;
+                } else {
+                    displayDeducted = formatMoney(item.deducted_amount);
+                }
+
                 return `
                     <div class="glass-card p-3 rounded-xl border ${borderStyle} flex flex-col gap-1 text-xs">
                         <div class="flex justify-between items-center">
@@ -731,8 +739,8 @@
                             ${statusBadge}
                         </div>
                         <div class="flex justify-between items-center text-muted text-[11px] mt-1">
-                            <span>Вычитаемая сумма: <b class="text-rose-400">${item.display_deducted}</b></span>
-                            <span>Остаток: <b class="text-lime-400">${Number(item.balance_after).toLocaleString()} ₸</b></span>
+                            <span>Вычитаемая сумма: <b class="text-rose-400">${displayDeducted}</b></span>
+                            <span>Остаток: <b class="text-lime-400">${formatMoney(item.balance_after)}</b></span>
                         </div>
                     </div>
                 `;
@@ -743,7 +751,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <div>
                             <h3 class="text-xl font-bold text-title">Детализация: ${r.template_name}</h3>
-                            <p class="text-xs text-muted">Исходный баланс: ${Number(r.initial_amount).toLocaleString()} ₸ | Остаток: ${Number(r.final_balance).toLocaleString()} ₸</p>
+                            <p class="text-xs text-muted">Исходный баланс: ${formatMoney(r.initial_amount)} | Остаток: ${formatMoney(r.final_balance)}</p>
                         </div>
                         <button onclick="document.getElementById('calc-output-card').remove()" class="text-muted hover:text-title text-sm cursor-pointer">✕ Закрыть</button>
                     </div>
