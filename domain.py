@@ -106,19 +106,18 @@ class APIValidator(Validator):
             raise InvalidTypeError(f"Ошибка валидации шаблона:")
 
 
-#С этим чето надо делать
 def execute_budget_simulation(template: Template, initial_amount: Decimal) -> dict:
     current_balance = initial_amount
     success = True
     error_step = None
     history = []
 
-    for idx, payment in enumerate(template.payments, start=1):
+    for index, payment in enumerate(template.payments, start=1):
         if current_balance == Decimal('0'):
             success = False
-            error_step = idx
+            error_step = index
             history.append({
-                "step": idx,
+                "step": index,
                 "payment": payment,
                 "deducted_amount": Decimal('0'),
                 "balance_after": Decimal('0'),
@@ -132,9 +131,9 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
 
             if current_balance < payment.value:
                 success = False
-                error_step = idx
+                error_step = index
                 history.append({
-                    "step": idx,
+                    "step": index,
                     "payment": payment,
                     "deducted_amount": deducted,
                     "balance_after": balance_after,
@@ -144,7 +143,7 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
 
             current_balance = balance_after
             history.append({
-                "step": idx,
+                "step": index,
                 "payment": payment,
                 "deducted_amount": deducted,
                 "balance_after": current_balance,
@@ -157,7 +156,7 @@ def execute_budget_simulation(template: Template, initial_amount: Decimal) -> di
             current_balance = balance_after
 
             history.append({
-                "step": idx,
+                "step": index,
                 "payment": payment,
                 "deducted_amount": deducted,
                 "balance_after": current_balance,
