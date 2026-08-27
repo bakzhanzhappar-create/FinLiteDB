@@ -15,7 +15,7 @@
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
     <style>
-        /* Блокировка горизонтального скролла */
+        /* Блокировка горизонтального скролла на уровне системы */
         html, body {
             width: 100%;
             max-width: 100%;
@@ -25,6 +25,7 @@
             -webkit-overflow-scrolling: touch;
         }
 
+        /* Защита от расширения родительских элементов длинным текстом */
         *, *::before, *::after {
             box-sizing: border-box !important;
             overflow-wrap: break-word;
@@ -34,6 +35,7 @@
                         color 0.4s ease;
         }
 
+        /* Темы оформления */
         body.theme-dark {
             background-color: #0d120f;
             color: #f4f4f0;
@@ -93,7 +95,7 @@
         .accent-lime { color: #a3e635; }
         .theme-light .accent-lime { color: #4d7c0f; }
 
-        /* Изолируем фон полностью */
+        /* Изоляция декоративного фона */
         .glow-bg-container {
             position: fixed;
             top: 0;
@@ -135,6 +137,7 @@
 
         .input-dark {
             width: 100%;
+            max-width: 100%;
             border-radius: 0.75rem;
             padding: 0.75rem 1rem;
             transition: border-color 0.2s, background-color 0.6s, color 0.4s;
@@ -191,7 +194,7 @@
 </head>
 <body class="theme-dark relative min-h-screen pb-12 w-full overflow-x-hidden">
 
-    <!-- Изолирующая мобильная обертка -->
+    <!-- Изолирующая контейнер-обертка против горизонтального скролла на мобильных -->
     <div class="w-full max-w-full overflow-x-hidden relative">
 
         <div class="glow-bg-container">
@@ -216,13 +219,16 @@
 
             <div id="templates-page" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
 
+                <!-- Левый блок: Сохраненные списки -->
                 <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-12 w-full min-w-0">
                     <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
                 </section>
 
+                <!-- Правый блок: Карточки взаимодействия -->
                 <section class="lg:col-span-1 w-full min-w-0">
                     <div class="flex flex-col gap-6 sticky top-6 w-full">
 
+                        <!-- Карточка: Расчет -->
                         <div class="glass-card p-4 sm:p-6 rounded-2xl border-l-4 border-l-lime-400 w-full">
                             <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Запустить расчёт</h2>
                             <p class="text-xs text-muted mb-4">Укажите название существующего шаблона и сумму</p>
@@ -243,6 +249,7 @@
                             </div>
                         </div>
 
+                        <!-- Карточка: Создание шаблонов -->
                         <div class="glass-card p-4 sm:p-6 rounded-2xl w-full">
                             <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Создание шаблона</h2>
                             <p class="text-xs text-muted mb-4">Формирование цепочки правил распределения</p>
@@ -260,6 +267,7 @@
                                         <input type="text" id="rule-title" placeholder="Название (например: На проезд)" class="input-dark py-1.5 text-xs">
                                         <input type="text" id="rule-desc" placeholder="Описание/Комментарий..." class="input-dark py-1.5 text-xs">
 
+                                        <!-- Мобильная сетка 2 колонки для выпадающего списка и поля значения -->
                                         <div class="grid grid-cols-2 gap-2">
                                             <select id="payment-type" class="input-dark py-1.5 text-xs bg-zinc-900">
                                                 <option value="fix">Фикс сумма</option>
@@ -291,7 +299,7 @@
         </main>
     </div>
 
-    <!-- Локальные модули (Local-First PWA) -->
+    <!-- Модуль JS -->
     <script type="module">
         import { executeBudgetSimulation } from './engine.js';
         import {
