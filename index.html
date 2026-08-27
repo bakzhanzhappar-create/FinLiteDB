@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finance Dashboard — Finlite DB</title>
+
+    <!-- PWA Manifest & Theme -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d120f">
+
+    <!-- Tailwind & Dexie DB -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+
     <style>
         * {
             transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
@@ -119,7 +127,6 @@
             border-color: #a3e635;
         }
 
-        /* --- Стили для плавного Drag & Drop --- */
         .draggable-item {
             cursor: grab;
             user-select: none;
@@ -133,7 +140,6 @@
             transform: scale(0.98);
         }
 
-        /* Посадочная точка (Базовый стили) */
         .drop-placeholder {
             border-radius: 0.75rem;
             height: 60px;
@@ -141,7 +147,6 @@
             animation: pulse-border 1.5s infinite alternate;
         }
 
-        /* Внутри своего шаблона -> Зеленый цвет */
         .drop-placeholder.internal {
             border: 2px dashed #a3e635;
             background: rgba(163, 230, 53, 0.08);
@@ -151,7 +156,6 @@
             background: rgba(77, 124, 15, 0.08);
         }
 
-        /* При перетаскивании в ДРУГОЙ шаблон -> Желтый/Янтарный цвет */
         .drop-placeholder.foreign {
             border: 2px dashed #f59e0b;
             background: rgba(245, 158, 11, 0.12);
@@ -210,7 +214,7 @@
                                 <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
                                 <input type="text" id="calc-amount" placeholder="Например: 55000" class="input-dark py-2 text-sm">
                             </div>
-                            <button onclick="sendToCalculation()" class="w-full btn-gradient py-2.5 rounded-xl text-sm cursor-pointer mt-1">
+                            <button id="btn-calc" class="w-full btn-gradient py-2.5 rounded-xl text-sm cursor-pointer mt-1">
                                 Рассчитать бюджет
                             </button>
                         </div>
@@ -241,7 +245,7 @@
                                         <input type="text" id="rule-value" placeholder="Значение" class="input-dark py-1.5 text-xs">
                                     </div>
 
-                                    <button onclick="addRuleToTempList()" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-1.5 rounded-lg cursor-pointer transition">
+                                    <button id="btn-add-rule" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-1.5 rounded-lg cursor-pointer transition">
                                         + Добавить правило в список
                                     </button>
                                 </div>
@@ -251,8 +255,8 @@
                                 </div>
                             </div>
 
-                            <button onclick="sendTemplateToBackend()" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer mt-1 text-sm shadow">
-                                Сохранить шаблон на бэкенд
+                            <button id="btn-save-tpl" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer mt-1 text-sm shadow">
+                                Сохранить шаблон локально
                             </button>
                         </div>
                     </div>
@@ -263,17 +267,30 @@
 
     </main>
 
-    <script>
-        const API_URL = 'http://127.0.0.1:8000/api';
-        let currentTemplatePayments = [];
+    <!-- Локальные модули (Local-First PWA) -->
+    <script type="module">
+        import { executeBudgetSimulation } from './engine.js';
+        import {
+            getAllTemplatesDB,
+            getTemplateDB,
+            saveTemplateDB,
+            deleteTemplateDB,
+            updateTemplatePaymentsDB
+        } from './db.js';
 
-        // Переменные состояния Drag & Drop
+        let currentTemplatePayments = [];
         let draggedItem = null;
         let originIndex = null;
         let donorTemplateName = null;
         let placeholder = null;
 
-        // Форматирование сумм валюты на стороне UI (чистая презентация)
+        // Регистрация Service Worker для PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('PWA Service Worker зарегистрирован успешно'))
+                .catch(err => console.error('Ошибка регистрации SW:', err));
+        }
+
         const formatMoney = (amount) => {
             return new Intl.NumberFormat('ru-KZ', {
                 style: 'currency',
@@ -282,15 +299,11 @@
             }).format(amount);
         };
 
-        window.addEventListener('DOMContentLoaded', () => {
-            loadAllTemplates();
-        });
-
-        function toggleTheme() {
+        window.toggleTheme = function() {
             const body = document.body;
             body.classList.toggle('theme-dark');
             body.classList.toggle('theme-light');
-        }
+        };
 
         function validateNumberInput(value) {
             const clean = value.toString().trim().replace(',', '.');
@@ -304,29 +317,23 @@
         function populateTemplatesDropdown(templates) {
             const datalist = document.getElementById('templates-list');
             if (!datalist) return;
-
-            datalist.innerHTML = templates
-                .map(tpl => `<option value="${tpl.name}"></option>`)
-                .join('');
+            datalist.innerHTML = templates.map(tpl => `<option value="${tpl.name}"></option>`).join('');
         }
 
         async function loadAllTemplates() {
             const container = document.getElementById('active-templates-container');
             try {
-                const response = await fetch(`${API_URL}/templates`);
-                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-                const templates = await response.json();
-
+                const templates = await getAllTemplatesDB();
                 populateTemplatesDropdown(templates);
 
                 if (templates.length === 0) {
-                    container.innerHTML = '<div class="text-center py-12 text-muted italic">В базе нет созданных шаблонов. Сделайте первый на панели справа!</div>';
+                    container.innerHTML = '<div class="text-center py-12 text-muted italic">В локальной базе нет шаблонов. Создайте первый на панели справа!</div>';
                     return;
                 }
 
                 container.innerHTML = templates.map(tpl => {
                     const rulesHtml = tpl.payments.map((p, idx) => {
-                        const isPercent = p.__type__ === 'Percentage';
+                        const isPercent = p.type === 'percentage' || p.__type__ === 'Percentage';
                         const badgeText = isPercent ? 'Процент' : 'Фикс';
                         const displayValue = isPercent ? `-${p.value}%` : `-${formatMoney(p.value)}`;
                         const borderHighlight = isPercent ? 'border-l-2 border-l-rose-500/40' : '';
@@ -349,7 +356,6 @@
                                 <div class="flex items-center gap-3">
                                     <span class="text-base font-bold text-rose-500 mr-1">${displayValue}</span>
 
-                                    <!-- Иконка перемещения -->
                                     <button title="Зажмите и потяните для перемещения"
                                             class="drag-handle p-2 rounded-lg bg-zinc-800/30 hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 transition cursor-grab flex items-center justify-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -359,8 +365,7 @@
                                         </svg>
                                     </button>
 
-                                    <!-- Кнопка удаления -->
-                                    <button onclick="deleteRule('${tpl.name}', ${idx})"
+                                    <button data-action="delete-rule" data-template="${tpl.name}" data-index="${idx}"
                                             title="Удалить правило"
                                             class="p-2 rounded-lg bg-rose-950/20 hover:bg-rose-900/50 text-rose-400/70 hover:text-rose-400 border border-rose-900/20 hover:border-rose-800/40 transition cursor-pointer flex items-center justify-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -383,7 +388,7 @@
                                     <h2 class="text-2xl font-bold tracking-tight text-title flex items-center gap-2">Шаблон: ${tpl.name}</h2>
                                     <p class="text-xs text-muted mt-0.5">Правила обрабатываются строго по принципу FIFO (сверху вниз)</p>
                                 </div>
-                                <button onclick="deleteTemplate('${tpl.name}')" class="p-2 text-xs bg-rose-950/40 hover:bg-rose-900 text-rose-400 rounded-xl transition font-medium border border-rose-900/30 cursor-pointer flex items-center gap-1">
+                                <button data-action="delete-template" data-template="${tpl.name}" class="p-2 text-xs bg-rose-950/40 hover:bg-rose-900 text-rose-400 rounded-xl transition font-medium border border-rose-900/30 cursor-pointer flex items-center gap-1">
                                      Удалить весь шаблон
                                 </button>
                             </div>
@@ -395,16 +400,16 @@
                 }).join('');
 
                 initDragAndDrop();
+                bindDynamicEvents();
 
             } catch (err) {
-                container.innerHTML = '<div class="text-center py-12 text-rose-400 italic">Ошибка соединения с API при загрузке шаблонов.</div>';
+                container.innerHTML = `<div class="text-center py-12 text-rose-400 italic">Ошибка чтения локальной базы IndexedDB: ${err.message}</div>`;
             }
         }
 
-        /* --- Логика Drag and Drop с поддержкой миграции между шаблонами --- */
+        /* --- Drag & Drop с локальным сохранением --- */
         function initDragAndDrop() {
             const containers = document.querySelectorAll('.rules-container');
-
             placeholder = document.createElement('div');
             placeholder.className = 'drop-placeholder';
 
@@ -412,11 +417,10 @@
                 const items = container.querySelectorAll('.draggable-item');
 
                 items.forEach(item => {
-                    item.addEventListener('dragstart', (e) => {
+                    item.addEventListener('dragstart', () => {
                         draggedItem = item;
                         originIndex = parseInt(item.getAttribute('data-index'));
                         donorTemplateName = item.getAttribute('data-template');
-
                         setTimeout(() => item.classList.add('dragging'), 0);
                     });
 
@@ -429,30 +433,31 @@
 
                             let targetIndex = 0;
                             const childrenArr = Array.from(targetContainer.children);
-
                             for (let i = 0; i < childrenArr.length; i++) {
                                 if (childrenArr[i] === placeholder) break;
-                                if (childrenArr[i] !== draggedItem) {
-                                    targetIndex++;
-                                }
+                                if (childrenArr[i] !== draggedItem) targetIndex++;
                             }
 
                             placeholder.parentNode.replaceChild(draggedItem, placeholder);
                             draggedItem.setAttribute('data-template', targetTemplateName);
 
-                            updateIndexes(targetContainer);
-                            const donorContainer = document.querySelector(`.rules-container[data-template="${donorTemplateName}"]`);
-                            if (donorContainer && donorContainer !== targetContainer) {
-                                updateIndexes(donorContainer);
+                            // Обновление локальной IndexedDB
+                            if (donorTemplateName === targetTemplateName) {
+                                const tpl = await getTemplateDB(donorTemplateName);
+                                const movedRule = tpl.payments.splice(originIndex, 1)[0];
+                                tpl.payments.splice(targetIndex, 0, movedRule);
+                                await updateTemplatePaymentsDB(donorTemplateName, tpl.payments);
+                            } else {
+                                const donorTpl = await getTemplateDB(donorTemplateName);
+                                const targetTpl = await getTemplateDB(targetTemplateName);
+                                const movedRule = donorTpl.payments.splice(originIndex, 1)[0];
+                                targetTpl.payments.splice(targetIndex, 0, movedRule);
+
+                                await updateTemplatePaymentsDB(donorTemplateName, donorTpl.payments);
+                                await updateTemplatePaymentsDB(targetTemplateName, targetTpl.payments);
                             }
 
-                            if (donorTemplateName === targetTemplateName) {
-                                if (originIndex !== targetIndex) {
-                                    await sendCustomizeRequest(donorTemplateName, originIndex, targetIndex);
-                                }
-                            } else {
-                                await sendImmigrationRequest(donorTemplateName, originIndex, targetTemplateName, targetIndex);
-                            }
+                            await loadAllTemplates();
                         }
 
                         draggedItem = null;
@@ -467,30 +472,13 @@
                     if (!draggedItem) return;
 
                     const currentTargetTemplate = container.getAttribute('data-template');
-
-                    if (currentTargetTemplate === donorTemplateName) {
-                        placeholder.className = 'drop-placeholder internal';
-                    } else {
-                        placeholder.className = 'drop-placeholder foreign';
-                    }
+                    placeholder.className = currentTargetTemplate === donorTemplateName ? 'drop-placeholder internal' : 'drop-placeholder foreign';
 
                     const afterElement = getDragAfterElement(container, e.clientY);
-
                     if (afterElement == null) {
                         container.appendChild(placeholder);
                     } else {
                         container.insertBefore(placeholder, afterElement);
-                    }
-
-                    const currentPlaceholderIndex = Array.from(container.children).indexOf(placeholder);
-                    const badge = draggedItem.querySelector('.rule-badge');
-                    if (badge) {
-                        badge.textContent = currentPlaceholderIndex + 1;
-                        if (currentTargetTemplate === donorTemplateName) {
-                            badge.className = 'rule-badge absolute left-4 w-5 h-5 rounded-full bg-lime-400 text-zinc-950 font-bold text-center leading-5 text-[10px] transition-colors duration-200';
-                        } else {
-                            badge.className = 'rule-badge absolute left-4 w-5 h-5 rounded-full bg-amber-400 text-zinc-950 font-bold text-center leading-5 text-[10px] transition-colors duration-200';
-                        }
                     }
                 });
             });
@@ -498,7 +486,6 @@
 
         function getDragAfterElement(container, y) {
             const draggableElements = [...container.querySelectorAll('.draggable-item:not(.dragging)')];
-
             return draggableElements.reduce((closest, child) => {
                 const box = child.getBoundingClientRect();
                 const offset = y - box.top - box.height / 2;
@@ -510,90 +497,33 @@
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
-        function updateIndexes(container) {
-            const items = container.querySelectorAll('.draggable-item');
-            items.forEach((item, idx) => {
-                item.setAttribute('data-index', idx);
-                const badge = item.querySelector('.rule-badge');
-                if (badge) {
-                    badge.textContent = idx + 1;
-                    badge.className = 'rule-badge absolute left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 transition-colors duration-200';
-                }
+        function bindDynamicEvents() {
+            document.querySelectorAll('[data-action="delete-rule"]').forEach(btn => {
+                btn.onclick = async () => {
+                    const name = btn.getAttribute('data-template');
+                    const idx = parseInt(btn.getAttribute('data-index'));
+                    if (confirm(`Удалить правило №${idx + 1} из шаблона "${name}"?`)) {
+                        const tpl = await getTemplateDB(name);
+                        tpl.payments.splice(idx, 1);
+                        await updateTemplatePaymentsDB(name, tpl.payments);
+                        await loadAllTemplates();
+                    }
+                };
+            });
+
+            document.querySelectorAll('[data-action="delete-template"]').forEach(btn => {
+                btn.onclick = async () => {
+                    const name = btn.getAttribute('data-template');
+                    if (confirm(`Вы действительно хотите удалить весь шаблон "${name}"?`)) {
+                        await deleteTemplateDB(name);
+                        await loadAllTemplates();
+                    }
+                };
             });
         }
 
-        async function sendCustomizeRequest(name, originIndex, targetIndex) {
-            try {
-                const url = `${API_URL}/templates/${encodeURIComponent(name)}?origin_index=${originIndex}&target_index=${targetIndex}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    alert("Ошибка кастомизации: " + (data.detail || response.statusText));
-                    await loadAllTemplates();
-                }
-            } catch (err) {
-                alert("Ошибка сети при перестановке правил: " + err.message);
-                await loadAllTemplates();
-            }
-        }
-
-        async function sendImmigrationRequest(donorName, originIndex, targetTemplate, targetIndex) {
-            try {
-                const url = `${API_URL}/templates/${encodeURIComponent(donorName)}?donour_name=${encodeURIComponent(donorName)}&origin_index=${originIndex}&target_template=${encodeURIComponent(targetTemplate)}&target_index=${targetIndex}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                if (!response.ok) {
-                    const data = await response.json();
-                    alert("Ошибка при перемещении правила в другой шаблон: " + (data.detail || response.statusText));
-                    await loadAllTemplates();
-                }
-            } catch (err) {
-                alert("Ошибка сети при иммиграции правила: " + err.message);
-                await loadAllTemplates();
-            }
-        }
-
-        async function deleteRule(templateName, index) {
-            if (!confirm(`Удалить правило №${index + 1} из шаблона "${templateName}"?`)) return;
-
-            try {
-                const response = await fetch(`${API_URL}/templates/${encodeURIComponent(templateName)}?index=${index}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    await loadAllTemplates();
-                } else {
-                    const data = await response.json();
-                    alert("Ошибка при удалении правила: " + (data.detail || response.statusText));
-                }
-            } catch (err) {
-                alert("Ошибка сети при удалении правила: " + err.message);
-            }
-        }
-
-        async function deleteTemplate(name) {
-            if (!confirm(`Вы действительно хотите удалить весь шаблон "${name}"?`)) return;
-            try {
-                const response = await fetch(`${API_URL}/templates/${encodeURIComponent(name)}`, { method: 'DELETE' });
-                if (response.ok) {
-                    await loadAllTemplates();
-                } else {
-                    alert("Не удалось удалить шаблон");
-                }
-            } catch (err) {
-                alert("Ошибка удаления: " + err.message);
-            }
-        }
-
-        function addRuleToTempList() {
+        // --- Работа с локальным конструктором правил ---
+        document.getElementById('btn-add-rule').onclick = () => {
             const title = document.getElementById('rule-title').value.trim();
             const desc = document.getElementById('rule-desc').value.trim();
             const type = document.getElementById('payment-type').value;
@@ -607,18 +537,14 @@
 
             const finalDescription = desc ? `${title} (${desc})` : title;
 
-            currentTemplatePayments.push({
-                type: type,
-                value: value,
-                description: finalDescription
-            });
+            currentTemplatePayments.push({ type, value, description: finalDescription });
 
             document.getElementById('rule-title').value = '';
             document.getElementById('rule-desc').value = '';
             document.getElementById('rule-value').value = '';
 
             renderTempRules();
-        }
+        };
 
         function renderTempRules() {
             const container = document.getElementById('temp-rules-list');
@@ -629,47 +555,35 @@
             container.innerHTML = currentTemplatePayments.map((p, idx) =>
                 `<div class="p-1 bg-zinc-900/60 rounded mb-1 text-title flex justify-between items-center text-[11px]">
                     <span>${idx + 1}. <b>${p.type === 'fix' ? 'ФИКС' : 'ПРОЦЕНТ'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
-                    <button onclick="removeTempRule(${idx})" class="text-rose-400 hover:text-rose-500 px-1 font-bold">✕</button>
+                    <button data-remove-temp="${idx}" class="text-rose-400 hover:text-rose-500 px-1 font-bold">✕</button>
                  </div>`
             ).join('');
+
+            container.querySelectorAll('[data-remove-temp]').forEach(btn => {
+                btn.onclick = () => {
+                    const idx = parseInt(btn.getAttribute('data-remove-temp'));
+                    currentTemplatePayments.splice(idx, 1);
+                    renderTempRules();
+                };
+            });
         }
 
-        function removeTempRule(index) {
-            currentTemplatePayments.splice(index, 1);
-            renderTempRules();
-        }
-
-        async function sendTemplateToBackend() {
+        document.getElementById('btn-save-tpl').onclick = async () => {
             const name = document.getElementById('tpl-name').value.trim();
             if (!name || currentTemplatePayments.length === 0) {
                 alert("Введите имя шаблона и наберите список правил!");
                 return;
             }
 
-            const payload = { name: name, payments: currentTemplatePayments };
+            await saveTemplateDB(name, currentTemplatePayments);
+            currentTemplatePayments = [];
+            document.getElementById('tpl-name').value = '';
+            renderTempRules();
+            await loadAllTemplates();
+        };
 
-            try {
-                const response = await fetch(`${API_URL}/templates`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    currentTemplatePayments = [];
-                    document.getElementById('tpl-name').value = '';
-                    renderTempRules();
-                    await loadAllTemplates();
-                } else {
-                    const data = await response.json();
-                    alert("Ошибка бэка: " + data.detail);
-                }
-            } catch (err) {
-                alert("Ошибка отправки: " + err.message);
-            }
-        }
-
-        async function sendToCalculation() {
+        // --- Локальный расчет бюджета (Вызов engine.js) ---
+        document.getElementById('btn-calc').onclick = async () => {
             const templateName = document.getElementById('calc-template-name').value.trim();
             const rawAmount = document.getElementById('calc-amount').value;
 
@@ -679,29 +593,19 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_URL}/calculate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ template_name: templateName, amount: amount })
-                });
-                const data = await response.json();
-
-                if (response.ok && data.status !== "error") {
-                    const r = data.result;
-                    renderCalculationOutput(r);
-                } else {
-                    alert("Ошибка: " + (data.message || data.detail));
-                }
-            } catch (err) {
-                alert("Ошибка сети: " + err.message);
+            const template = await getTemplateDB(templateName);
+            if (!template) {
+                alert(`Шаблон "${templateName}" не найден в локальной базе!`);
+                return;
             }
-        }
 
-        // --- Вся логика отображения результатов расчета перенесена на фронтенд ---
+            // Вызов чистой функции расчёта
+            const result = executeBudgetSimulation(template, amount);
+            renderCalculationOutput(result);
+        };
+
         function renderCalculationOutput(r) {
             const container = document.getElementById('active-templates-container');
-
             const oldResult = document.getElementById('calc-output-card');
             if (oldResult) oldResult.remove();
 
@@ -710,7 +614,6 @@
                 let borderStyle = 'border-zinc-800/60';
                 let displayDeducted = '';
 
-                // Определение текста статуса
                 if (item.status === 'ok') {
                     statusBadge = '<span class="text-[10px] text-emerald-400 font-semibold">Успешно</span>';
                 } else if (item.status === 'insufficient_funds') {
@@ -721,12 +624,7 @@
                     borderStyle = 'border-amber-500/50 bg-amber-950/20';
                 }
 
-                // Форматирование вычитаемой суммы (используется если бэкенд не прислал display_deducted)
-                if (item.display_deducted) {
-                    displayDeducted = item.display_deducted;
-                } else if (item.status === 'zero_balance_stop' && item.type === 'percentage') {
-                    displayDeducted = `${item.value}% (0 ₸)`;
-                } else if (item.type === 'percentage') {
+                if (item.type === 'percentage') {
                     displayDeducted = `${item.value}% (${formatMoney(item.deducted_amount)})`;
                 } else {
                     displayDeducted = formatMoney(item.deducted_amount);
@@ -764,6 +662,9 @@
 
             container.insertAdjacentHTML('afterbegin', outputHtml);
         }
+
+        // Запуск при старте
+        window.addEventListener('DOMContentLoaded', loadAllTemplates);
     </script>
 </body>
 </html>
