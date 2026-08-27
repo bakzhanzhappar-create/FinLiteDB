@@ -1,0 +1,17 @@
+{
+  "short_name": "FinliteDB",
+  "name": "Finlite DB — Финансовый Журнал",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2382/2382461.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0d120f",
+  "theme_color": "#0d120f",
+  "display": "standalone",
+  "orientation": "portrait"
+}
