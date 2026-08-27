@@ -15,18 +15,20 @@
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
     <style>
-        /* Жесткая блокировка горизонтали на базовом уровне */
+        /* Блокировка горизонтального скролла */
         html, body {
-            max-width: 100% !important;
+            width: 100%;
+            max-width: 100%;
             overflow-x: hidden !important;
             position: relative;
-            touch-action: pan-y !important; /* Разрешает только вертикальный свайп */
+            touch-action: pan-y !important;
             -webkit-overflow-scrolling: touch;
         }
 
         *, *::before, *::after {
             box-sizing: border-box !important;
-            max-width: 100%; /* Гарантирует, что ни один элемент не вылезет за экран */
+            overflow-wrap: break-word;
+            word-break: break-word;
             transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                         border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                         color 0.4s ease;
@@ -91,7 +93,7 @@
         .accent-lime { color: #a3e635; }
         .theme-light .accent-lime { color: #4d7c0f; }
 
-        /* Изолируем фон полностью, чтобы размытие blur() не растягивало viewport */
+        /* Изолируем фон полностью */
         .glow-bg-container {
             position: fixed;
             top: 0;
@@ -189,101 +191,105 @@
 </head>
 <body class="theme-dark relative min-h-screen pb-12 w-full overflow-x-hidden">
 
-    <div class="glow-bg-container">
-        <div class="glow-bg"></div>
-    </div>
+    <!-- Изолирующая мобильная обертка -->
+    <div class="w-full max-w-full overflow-x-hidden relative">
 
-    <nav class="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 flex justify-between items-center border-b border-zinc-800/40">
-        <div class="flex items-center gap-2">
-            <div class="w-4 h-4 rounded-full bg-lime-400 animate-pulse"></div>
-            <span class="text-xl font-bold tracking-wider text-title">Finlite <span class="accent-lime">DB</span></span>
+        <div class="glow-bg-container">
+            <div class="glow-bg"></div>
         </div>
-        <div class="flex items-center gap-4 sm:gap-6 text-sm">
-            <span id="btn-templates" class="text-lime-400 font-semibold select-none text-xs sm:text-sm">Шаблоны</span>
 
-            <button onclick="toggleTheme()" class="ml-2 p-2 rounded-xl bg-zinc-800/20 hover:bg-zinc-800/50 cursor-pointer text-lg transition" title="Сменить тему">
-                🌗
-            </button>
-        </div>
-    </nav>
+        <nav class="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 flex justify-between items-center border-b border-zinc-800/40">
+            <div class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-full bg-lime-400 animate-pulse"></div>
+                <span class="text-xl font-bold tracking-wider text-title">Finlite <span class="accent-lime">DB</span></span>
+            </div>
+            <div class="flex items-center gap-4 sm:gap-6 text-sm">
+                <span id="btn-templates" class="text-lime-400 font-semibold select-none text-xs sm:text-sm">Шаблоны</span>
 
-    <main class="w-full max-w-6xl mx-auto px-4 sm:px-6 mt-8 overflow-hidden">
+                <button onclick="toggleTheme()" class="ml-2 p-2 rounded-xl bg-zinc-800/20 hover:bg-zinc-800/50 cursor-pointer text-lg transition" title="Сменить тему">
+                    🌗
+                </button>
+            </div>
+        </nav>
 
-        <div id="templates-page" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+        <main class="w-full max-w-6xl mx-auto px-4 sm:px-6 mt-8 overflow-hidden">
 
-            <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-12 w-full min-w-0">
-                <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
-            </section>
+            <div id="templates-page" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
 
-            <section class="lg:col-span-1 w-full min-w-0">
-                <div class="flex flex-col gap-6 sticky top-6 w-full">
+                <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-12 w-full min-w-0">
+                    <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
+                </section>
 
-                    <div class="glass-card p-4 sm:p-6 rounded-2xl border-l-4 border-l-lime-400 w-full">
-                        <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Запустить расчёт</h2>
-                        <p class="text-xs text-muted mb-4">Укажите название существующего шаблона и сумму</p>
+                <section class="lg:col-span-1 w-full min-w-0">
+                    <div class="flex flex-col gap-6 sticky top-6 w-full">
 
-                        <div class="flex flex-col gap-3">
-                            <div>
-                                <label class="block text-[11px] text-muted mb-1">Название шаблона в системе</label>
-                                <input type="text" id="calc-template-name" list="templates-list" placeholder="Выберите или введите название..." class="input-dark py-2 text-sm" autocomplete="off">
-                                <datalist id="templates-list"></datalist>
+                        <div class="glass-card p-4 sm:p-6 rounded-2xl border-l-4 border-l-lime-400 w-full">
+                            <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Запустить расчёт</h2>
+                            <p class="text-xs text-muted mb-4">Укажите название существующего шаблона и сумму</p>
+
+                            <div class="flex flex-col gap-3">
+                                <div>
+                                    <label class="block text-[11px] text-muted mb-1">Название шаблона в системе</label>
+                                    <input type="text" id="calc-template-name" list="templates-list" placeholder="Выберите или введите название..." class="input-dark py-2 text-sm" autocomplete="off">
+                                    <datalist id="templates-list"></datalist>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
+                                    <input type="text" id="calc-amount" placeholder="Например: 55000" class="input-dark py-2 text-sm">
+                                </div>
+                                <button id="btn-calc" class="w-full btn-gradient py-2.5 rounded-xl text-sm cursor-pointer mt-1">
+                                    Рассчитать бюджет
+                                </button>
                             </div>
-                            <div>
-                                <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
-                                <input type="text" id="calc-amount" placeholder="Например: 55000" class="input-dark py-2 text-sm">
-                            </div>
-                            <button id="btn-calc" class="w-full btn-gradient py-2.5 rounded-xl text-sm cursor-pointer mt-1">
-                                Рассчитать бюджет
-                            </button>
                         </div>
-                    </div>
 
-                    <div class="glass-card p-4 sm:p-6 rounded-2xl w-full">
-                        <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Создание шаблона</h2>
-                        <p class="text-xs text-muted mb-4">Формирование цепочки правил распределения</p>
+                        <div class="glass-card p-4 sm:p-6 rounded-2xl w-full">
+                            <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Создание шаблона</h2>
+                            <p class="text-xs text-muted mb-4">Формирование цепочки правил распределения</p>
 
-                        <div class="flex flex-col gap-3">
-                            <div>
-                                <label class="block text-[11px] text-muted mb-1">Название шаблона</label>
-                                <input type="text" id="tpl-name" placeholder="Например: Зарплата" class="input-dark py-2 text-sm">
-                            </div>
+                            <div class="flex flex-col gap-3">
+                                <div>
+                                    <label class="block text-[11px] text-muted mb-1">Название шаблона</label>
+                                    <input type="text" id="tpl-name" placeholder="Например: Зарплата" class="input-dark py-2 text-sm">
+                                </div>
 
-                            <div class="border-t border-zinc-800/60 my-1 pt-2">
-                                <span class="text-[11px] uppercase tracking-wider font-bold text-lime-400 block mb-2">Конструктор правил</span>
+                                <div class="border-t border-zinc-800/60 my-1 pt-2">
+                                    <span class="text-[11px] uppercase tracking-wider font-bold text-lime-400 block mb-2">Конструктор правил</span>
 
-                                <div class="flex flex-col gap-2 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-800/50 mb-2">
-                                    <input type="text" id="rule-title" placeholder="Название (например: На проезд)" class="input-dark py-1.5 text-xs">
-                                    <input type="text" id="rule-desc" placeholder="Описание/Комментарий..." class="input-dark py-1.5 text-xs">
+                                    <div class="flex flex-col gap-2 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-800/50 mb-2">
+                                        <input type="text" id="rule-title" placeholder="Название (например: На проезд)" class="input-dark py-1.5 text-xs">
+                                        <input type="text" id="rule-desc" placeholder="Описание/Комментарий..." class="input-dark py-1.5 text-xs">
 
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <select id="payment-type" class="input-dark py-1.5 text-xs bg-zinc-900">
-                                            <option value="fix">Фикс сумма</option>
-                                            <option value="percentage">Процент %</option>
-                                        </select>
-                                        <input type="text" id="rule-value" placeholder="Значение" class="input-dark py-1.5 text-xs">
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <select id="payment-type" class="input-dark py-1.5 text-xs bg-zinc-900">
+                                                <option value="fix">Фикс сумма</option>
+                                                <option value="percentage">Процент %</option>
+                                            </select>
+                                            <input type="text" id="rule-value" placeholder="Значение" class="input-dark py-1.5 text-xs">
+                                        </div>
+
+                                        <button id="btn-add-rule" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-1.5 rounded-lg cursor-pointer transition">
+                                            + Добавить правило в список
+                                        </button>
                                     </div>
 
-                                    <button id="btn-add-rule" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-1.5 rounded-lg cursor-pointer transition">
-                                        + Добавить правило в список
-                                    </button>
+                                    <div id="temp-rules-list" class="text-[11px] text-muted flex flex-col gap-1 max-h-28 overflow-y-auto mb-2 p-1 bg-zinc-950/20 rounded">
+                                        <span class="italic text-zinc-600 p-1">Список правил пуст</span>
+                                    </div>
                                 </div>
 
-                                <div id="temp-rules-list" class="text-[11px] text-muted flex flex-col gap-1 max-h-28 overflow-y-auto mb-2 p-1 bg-zinc-950/20 rounded">
-                                    <span class="italic text-zinc-600 p-1">Список правил пуст</span>
-                                </div>
+                                <button id="btn-save-tpl" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer mt-1 text-sm shadow">
+                                    Сохранить шаблон локально
+                                </button>
                             </div>
-
-                            <button id="btn-save-tpl" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer mt-1 text-sm shadow">
-                                Сохранить шаблон локально
-                            </button>
                         </div>
+
                     </div>
+                </section>
+            </div>
 
-                </div>
-            </section>
-        </div>
-
-    </main>
+        </main>
+    </div>
 
     <!-- Локальные модули (Local-First PWA) -->
     <script type="module">
@@ -359,9 +365,9 @@
                             <div draggable="true"
                                  data-index="${idx}"
                                  data-template="${tpl.name}"
-                                 class="draggable-item glass-card p-3 sm:p-4 rounded-xl flex justify-between items-center relative pl-10 sm:pl-12 ${borderHighlight} w-full min-w-0">
+                                 class="draggable-item glass-card p-3 sm:p-4 rounded-xl flex justify-between items-center relative pl-8 sm:pl-12 ${borderHighlight} w-full min-w-0">
 
-                                <div class="rule-badge absolute left-3 sm:left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 transition-colors duration-200">${idx + 1}</div>
+                                <div class="rule-badge absolute left-2 sm:left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 transition-colors duration-200">${idx + 1}</div>
 
                                 <div class="flex-1 pr-2 sm:pr-4 min-w-0 overflow-hidden">
                                     <div class="flex items-center gap-1.5 flex-wrap">
@@ -409,7 +415,7 @@
                                      Удалить
                                 </button>
                             </div>
-                            <div class="rules-container flex flex-col gap-3 min-h-[50px] relative before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40 w-full" data-template="${tpl.name}">
+                            <div class="rules-container flex flex-col gap-3 min-h-[50px] relative before:absolute before:left-3 sm:before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40 w-full overflow-hidden" data-template="${tpl.name}">
                                 ${rulesHtml}
                             </div>
                         </div>
@@ -568,7 +574,7 @@
             }
             container.innerHTML = currentTemplatePayments.map((p, idx) =>
                 `<div class="p-1 bg-zinc-900/60 rounded mb-1 text-title flex justify-between items-center text-[11px]">
-                    <span class="truncate pr-2">${idx + 1}. <b>${p.type === 'fix' ? 'ФИКС' : 'ПРОЦЕНТ'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
+                    <span class="truncate pr-2 break-all">${idx + 1}. <b>${p.type === 'fix' ? 'ФИКС' : 'ПРОЦЕНТ'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
                     <button data-remove-temp="${idx}" class="text-rose-400 hover:text-rose-500 px-1 font-bold shrink-0">✕</button>
                  </div>`
             ).join('');
