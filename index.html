@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" class="h-full w-full overflow-x-hidden">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
@@ -15,27 +15,40 @@
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
     <style>
-        /* Блокировка горизонтального скролла на уровне системы */
+        /* Жесткая блокировка сдвига viewport на уровне браузера */
         html, body {
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden !important;
-            position: relative;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             touch-action: pan-y !important;
-            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none !important;
         }
 
-        /* Защита от расширения родительских элементов длинным текстом */
+        /* Главный контейнер: скроллит только вертикально, горизонталь физически невозможна */
+        #app-root {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden !important;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
         *, *::before, *::after {
             box-sizing: border-box !important;
-            overflow-wrap: break-word;
-            word-break: break-word;
+            max-width: 100%;
             transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                         border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                         color 0.4s ease;
         }
 
-        /* Темы оформления */
         body.theme-dark {
             background-color: #0d120f;
             color: #f4f4f0;
@@ -95,13 +108,9 @@
         .accent-lime { color: #a3e635; }
         .theme-light .accent-lime { color: #4d7c0f; }
 
-        /* Изоляция декоративного фона */
         .glow-bg-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             overflow: hidden;
             z-index: -1;
             pointer-events: none;
@@ -137,7 +146,6 @@
 
         .input-dark {
             width: 100%;
-            max-width: 100%;
             border-radius: 0.75rem;
             padding: 0.75rem 1rem;
             transition: border-color 0.2s, background-color 0.6s, color 0.4s;
@@ -192,10 +200,9 @@
         }
     </style>
 </head>
-<body class="theme-dark relative min-h-screen pb-12 w-full overflow-x-hidden">
+<body class="theme-dark">
 
-    <!-- Изолирующая контейнер-обертка против горизонтального скролла на мобильных -->
-    <div class="w-full max-w-full overflow-x-hidden relative">
+    <div id="app-root" class="pb-12">
 
         <div class="glow-bg-container">
             <div class="glow-bg"></div>
@@ -219,16 +226,13 @@
 
             <div id="templates-page" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
 
-                <!-- Левый блок: Сохраненные списки -->
                 <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-12 w-full min-w-0">
                     <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
                 </section>
 
-                <!-- Правый блок: Карточки взаимодействия -->
                 <section class="lg:col-span-1 w-full min-w-0">
                     <div class="flex flex-col gap-6 sticky top-6 w-full">
 
-                        <!-- Карточка: Расчет -->
                         <div class="glass-card p-4 sm:p-6 rounded-2xl border-l-4 border-l-lime-400 w-full">
                             <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Запустить расчёт</h2>
                             <p class="text-xs text-muted mb-4">Укажите название существующего шаблона и сумму</p>
@@ -249,7 +253,6 @@
                             </div>
                         </div>
 
-                        <!-- Карточка: Создание шаблонов -->
                         <div class="glass-card p-4 sm:p-6 rounded-2xl w-full">
                             <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Создание шаблона</h2>
                             <p class="text-xs text-muted mb-4">Формирование цепочки правил распределения</p>
@@ -267,7 +270,6 @@
                                         <input type="text" id="rule-title" placeholder="Название (например: На проезд)" class="input-dark py-1.5 text-xs">
                                         <input type="text" id="rule-desc" placeholder="Описание/Комментарий..." class="input-dark py-1.5 text-xs">
 
-                                        <!-- Мобильная сетка 2 колонки для выпадающего списка и поля значения -->
                                         <div class="grid grid-cols-2 gap-2">
                                             <select id="payment-type" class="input-dark py-1.5 text-xs bg-zinc-900">
                                                 <option value="fix">Фикс сумма</option>
@@ -299,7 +301,7 @@
         </main>
     </div>
 
-    <!-- Модуль JS -->
+    <!-- Локальные модули (Local-First PWA) -->
     <script type="module">
         import { executeBudgetSimulation } from './engine.js';
         import {
@@ -373,9 +375,9 @@
                             <div draggable="true"
                                  data-index="${idx}"
                                  data-template="${tpl.name}"
-                                 class="draggable-item glass-card p-3 sm:p-4 rounded-xl flex justify-between items-center relative pl-8 sm:pl-12 ${borderHighlight} w-full min-w-0">
+                                 class="draggable-item glass-card p-3 sm:p-4 rounded-xl flex justify-between items-center relative pl-10 sm:pl-12 ${borderHighlight} w-full min-w-0">
 
-                                <div class="rule-badge absolute left-2 sm:left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 transition-colors duration-200">${idx + 1}</div>
+                                <div class="rule-badge absolute left-3 sm:left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 transition-colors duration-200">${idx + 1}</div>
 
                                 <div class="flex-1 pr-2 sm:pr-4 min-w-0 overflow-hidden">
                                     <div class="flex items-center gap-1.5 flex-wrap">
@@ -423,7 +425,7 @@
                                      Удалить
                                 </button>
                             </div>
-                            <div class="rules-container flex flex-col gap-3 min-h-[50px] relative before:absolute before:left-3 sm:before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40 w-full overflow-hidden" data-template="${tpl.name}">
+                            <div class="rules-container flex flex-col gap-3 min-h-[50px] relative before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40 w-full" data-template="${tpl.name}">
                                 ${rulesHtml}
                             </div>
                         </div>
@@ -582,7 +584,7 @@
             }
             container.innerHTML = currentTemplatePayments.map((p, idx) =>
                 `<div class="p-1 bg-zinc-900/60 rounded mb-1 text-title flex justify-between items-center text-[11px]">
-                    <span class="truncate pr-2 break-all">${idx + 1}. <b>${p.type === 'fix' ? 'ФИКС' : 'ПРОЦЕНТ'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
+                    <span class="truncate pr-2">${idx + 1}. <b>${p.type === 'fix' ? 'ФИКС' : 'ПРОЦЕНТ'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
                     <button data-remove-temp="${idx}" class="text-rose-400 hover:text-rose-500 px-1 font-bold shrink-0">✕</button>
                  </div>`
             ).join('');
