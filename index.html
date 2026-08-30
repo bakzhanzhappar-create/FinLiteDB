@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Finance Dashboard — Finlite DB</title>
 
-    <!-- PWA Manifest & Theme -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="./icon.png">
     <meta name="theme-color" content="#0d120f">
 
-    <!-- Tailwind & Dexie DB -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
     <style>
-        /* Блокировка горизонтального скролла на корневом уровне */
         html, body {
             max-width: 100%;
             overflow-x: hidden !important;
@@ -170,16 +170,13 @@
     <main class="w-full max-w-6xl mx-auto px-4 py-6 flex-1">
         <div id="templates-page" class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full min-w-0">
 
-            <!-- Левая колонка со списками -->
             <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-8 w-full min-w-0">
                 <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
             </section>
 
-            <!-- Правая колонка с калькулятором и конструктором -->
             <section class="lg:col-span-1 w-full min-w-0">
                 <div class="flex flex-col gap-6 sticky top-20 w-full min-w-0">
 
-                    <!-- Карточка расчета -->
                     <div class="glass-card p-4 sm:p-5 rounded-2xl border-l-4 border-l-lime-400 w-full min-w-0">
                         <h2 class="text-base font-bold text-title mb-1">Запустить расчёт</h2>
                         <p class="text-xs text-muted mb-4">Укажите шаблон и сумму</p>
@@ -200,7 +197,6 @@
                         </div>
                     </div>
 
-                    <!-- Карточка создания шаблона -->
                     <div class="glass-card p-4 sm:p-5 rounded-2xl w-full min-w-0">
                         <h2 class="text-base font-bold text-title mb-1">Создание шаблона</h2>
                         <p class="text-xs text-muted mb-3">Цепочка правил распределения</p>
@@ -247,7 +243,6 @@
         </div>
     </main>
 
-    <!-- JS Логика -->
     <script type="module">
         import { executeBudgetSimulation } from './engine.js';
         import {
@@ -265,7 +260,9 @@
         let placeholder = null;
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
+            navigator.serviceWorker.register(`./sw.js?v=${Date.now()}`)
+                .then(reg => reg.update())
+                .catch(err => console.error(err));
         }
 
         const formatMoney = (amount) => {
