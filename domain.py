@@ -42,7 +42,13 @@ class Fix(Payment):
     def apply(self, amount: Decimal) -> Decimal:
         return amount - self.value
 
-
+# @dataclass(frozen=True, slots=True)
+# class one_use_Fix(Fix)
+#Допустим. Взяли у знакомого долг, мы учитываем это при суммы об затраты
+# @dataclass(frozen=True, slots=True)
+# class one_use_Percentage(Percentage):
+#Можно добавлять при существующем или создающем шаблоне. После использования самоликвидируется.
+#Нужно допилить функцию добавление списка в существующем шаблоне
 @dataclass(slots=True)
 class Validator:
     value: str | Decimal
