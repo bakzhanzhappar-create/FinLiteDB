@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" class="h-full">
+<html lang="ru" class="min-h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -17,9 +17,10 @@
 
     <style>
         html, body {
-            max-width: 100%;
+            min-height: 100%;
+            max-width: 100vw;
             overflow-x: hidden !important;
-            touch-action: pan-y;
+            overflow-y: auto !important;
             overscroll-behavior-y: none;
         }
 
@@ -54,6 +55,13 @@
         }
         .theme-dark .text-muted { color: #a8a29e; }
         .theme-dark .text-title { color: #e7e5e4; }
+        .theme-dark .btn-rule-add {
+            background-color: #27272a;
+            color: #f4f4f0;
+        }
+        .theme-dark .btn-rule-add:hover {
+            background-color: #3f3f46;
+        }
 
         body.theme-light {
             background-color: #fcfbf7;
@@ -65,7 +73,7 @@
                 radial-gradient(circle at 80% 40%, rgba(204, 251, 241, 0.3) 0%, transparent 50%);
         }
         .theme-light .glass-card {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             border: 1px solid rgba(22, 58, 33, 0.12);
             box-shadow: 0 8px 32px 0 rgba(22, 58, 33, 0.04);
         }
@@ -76,6 +84,13 @@
         }
         .theme-light .text-muted { color: #71717a; }
         .theme-light .text-title { color: #1c241f; }
+        .theme-light .btn-rule-add {
+            background-color: #e4e4e7;
+            color: #18181b;
+        }
+        .theme-light .btn-rule-add:hover {
+            background-color: #d4d4d8;
+        }
 
         .accent-lime { color: #a3e635; }
         .theme-light .accent-lime { color: #4d7c0f; }
@@ -147,19 +162,20 @@
         }
     </style>
 </head>
-<body class="theme-dark min-h-full flex flex-col antialiased">
+<body class="theme-dark min-h-screen flex flex-col antialiased">
 
     <div class="glow-bg-container">
         <div class="glow-bg"></div>
     </div>
 
-    <header class="w-full border-b border-zinc-800/40 sticky top-0 backdrop-blur-md z-10 bg-zinc-950/20">
+    <header class="w-full border-b border-zinc-800/40 sticky top-0 backdrop-blur-md z-10">
         <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2 min-w-0">
                 <div class="w-3.5 h-3.5 rounded-full bg-lime-400 animate-pulse shrink-0"></div>
                 <span class="text-lg font-bold tracking-wider text-title truncate">Finlite <span class="accent-lime">DB</span></span>
             </div>
-            <div class="flex items-center gap-3 shrink-0">
+            <div class="flex items-center gap-4 shrink-0">
+                <span id="btn-templates" class="accent-lime font-semibold select-none text-xs sm:text-sm">Шаблоны распределения</span>
                 <button onclick="toggleTheme()" class="p-2 rounded-xl bg-zinc-800/30 hover:bg-zinc-800/60 cursor-pointer text-base transition" title="Сменить тему">
                     🌗
                 </button>
@@ -179,17 +195,17 @@
 
                     <div class="glass-card p-4 sm:p-5 rounded-2xl border-l-4 border-l-lime-400 w-full min-w-0">
                         <h2 class="text-base font-bold text-title mb-1">Запустить расчёт</h2>
-                        <p class="text-xs text-muted mb-4">Укажите шаблон и сумму</p>
+                        <p class="text-xs text-muted mb-4">Укажите название существующего шаблона и сумму</p>
 
                         <div class="flex flex-col gap-3">
                             <div>
-                                <label class="block text-[11px] text-muted mb-1">Название шаблона</label>
-                                <input type="text" id="calc-template-name" list="templates-list" placeholder="Выберите из списка..." class="input-dark text-xs" autocomplete="off">
+                                <label class="block text-[11px] text-muted mb-1">Название шаблона в системе</label>
+                                <input type="text" id="calc-template-name" list="templates-list" placeholder="Выберите или введите название..." class="input-dark text-xs" autocomplete="off">
                                 <datalist id="templates-list"></datalist>
                             </div>
                             <div>
                                 <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
-                                <input type="number" id="calc-amount" placeholder="55000" class="input-dark text-xs">
+                                <input type="number" id="calc-amount" placeholder="Например: 55000" class="input-dark text-xs">
                             </div>
                             <button id="btn-calc" class="w-full btn-gradient py-2.5 rounded-xl text-xs cursor-pointer mt-1">
                                 Рассчитать бюджет
@@ -199,31 +215,31 @@
 
                     <div class="glass-card p-4 sm:p-5 rounded-2xl w-full min-w-0">
                         <h2 class="text-base font-bold text-title mb-1">Создание шаблона</h2>
-                        <p class="text-xs text-muted mb-3">Цепочка правил распределения</p>
+                        <p class="text-xs text-muted mb-3">Формирование цепочки правил распределения</p>
 
                         <div class="flex flex-col gap-3">
                             <div>
                                 <label class="block text-[11px] text-muted mb-1">Название шаблона</label>
-                                <input type="text" id="tpl-name" placeholder="Зарплата" class="input-dark text-xs">
+                                <input type="text" id="tpl-name" placeholder="Например: Зарплата" class="input-dark text-xs">
                             </div>
 
                             <div class="border-t border-zinc-800/60 pt-3">
-                                <span class="text-[10px] uppercase tracking-wider font-bold text-lime-400 block mb-2">Конструктор правил</span>
+                                <span class="text-[10px] uppercase tracking-wider font-bold accent-lime block mb-2">Конструктор правил</span>
 
-                                <div class="flex flex-col gap-2 bg-zinc-900/50 p-3 rounded-xl border border-zinc-800/50 mb-2 min-w-0">
+                                <div class="flex flex-col gap-2 bg-zinc-900/30 p-3 rounded-xl border border-zinc-800/40 mb-2 min-w-0">
                                     <input type="text" id="rule-title" placeholder="Название (например: На проезд)" class="input-dark text-xs">
                                     <input type="text" id="rule-desc" placeholder="Описание/Комментарий..." class="input-dark text-xs">
 
                                     <div class="grid grid-cols-2 gap-2">
-                                        <select id="payment-type" class="input-dark text-xs bg-zinc-900">
-                                            <option value="fix">Фикс (₸)</option>
-                                            <option value="percentage">Процент (%)</option>
+                                        <select id="payment-type" class="input-dark text-xs">
+                                            <option value="fix">Фикс сумма</option>
+                                            <option value="percentage">Процент %</option>
                                         </select>
                                         <input type="number" id="rule-value" placeholder="Значение" class="input-dark text-xs">
                                     </div>
 
-                                    <button id="btn-add-rule" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-2 rounded-lg cursor-pointer transition">
-                                        + Добавить правило
+                                    <button id="btn-add-rule" class="w-full btn-rule-add font-medium text-[11px] py-2 rounded-lg cursor-pointer transition">
+                                        + Добавить правило в список
                                     </button>
                                 </div>
 
@@ -233,7 +249,7 @@
                             </div>
 
                             <button id="btn-save-tpl" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer text-xs">
-                                Сохранить шаблон
+                                Сохранить шаблон локально
                             </button>
                         </div>
                     </div>
@@ -510,9 +526,9 @@
                 return;
             }
             container.innerHTML = currentTemplatePayments.map((p, idx) =>
-                `<div class="p-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg text-title flex justify-between items-center text-[11px] gap-2 min-w-0">
+                `<div class="p-1.5 bg-zinc-900/10 dark:bg-zinc-900/80 border border-zinc-400/30 dark:border-zinc-800 rounded-lg text-title flex justify-between items-center text-[11px] gap-2 min-w-0">
                     <span class="truncate min-w-0"><b>${idx + 1}. ${p.type === 'fix' ? 'ФИКС' : '%'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
-                    <button data-remove-temp="${idx}" class="text-rose-400 hover:text-rose-500 font-bold shrink-0 px-1">✕</button>
+                    <button data-remove-temp="${idx}" class="text-rose-500 font-bold shrink-0 px-1">✕</button>
                  </div>`
             ).join('');
 
@@ -570,12 +586,12 @@
                 let displayDeducted = '';
 
                 if (item.status === 'ok') {
-                    statusBadge = '<span class="text-[10px] text-emerald-400 font-semibold">Успешно</span>';
+                    statusBadge = '<span class="text-[10px] text-emerald-500 font-semibold">Успешно</span>';
                 } else if (item.status === 'insufficient_funds') {
-                    statusBadge = '<span class="text-[10px] text-rose-400 font-semibold">Ошибка</span>';
+                    statusBadge = '<span class="text-[10px] text-rose-500 font-semibold">Ошибка</span>';
                     borderStyle = 'border-rose-500/50 bg-rose-950/20';
                 } else if (item.status === 'zero_balance_stop') {
-                    statusBadge = '<span class="text-[10px] text-amber-400 font-semibold">Баланс 0 ₸</span>';
+                    statusBadge = '<span class="text-[10px] text-amber-500 font-semibold">Баланс 0 ₸</span>';
                     borderStyle = 'border-amber-500/50 bg-amber-950/20';
                 }
 
@@ -592,15 +608,15 @@
                             ${statusBadge}
                         </div>
                         <div class="flex justify-between items-center text-muted text-[11px] mt-1 gap-2 flex-wrap">
-                            <span>Сумма: <b class="text-rose-400">${displayDeducted}</b></span>
-                            <span>Остаток: <b class="text-lime-400">${formatMoney(item.balance_after)}</b></span>
+                            <span>Сумма: <b class="text-rose-500">${displayDeducted}</b></span>
+                            <span>Остаток: <b class="accent-lime">${formatMoney(item.balance_after)}</b></span>
                         </div>
                     </div>
                 `;
             }).join('');
 
             const outputHtml = `
-                <div id="calc-output-card" class="glass-card p-4 sm:p-5 rounded-2xl border-l-4 ${r.success ? 'border-l-lime-400' : 'border-l-rose-500'} mb-4 w-full min-w-0">
+                <div id="calc-output-card" class="glass-card p-4 sm:p-5 rounded-2xl border-l-4 ${r.success ? 'border-l-lime-500' : 'border-l-rose-500'} mb-4 w-full min-w-0">
                     <div class="flex justify-between items-center mb-3 gap-2">
                         <div class="min-w-0 flex-1">
                             <h3 class="text-base font-bold text-title truncate">${r.template_name}</h3>
