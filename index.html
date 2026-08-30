@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Finance Dashboard — Finlite DB</title>
 
     <!-- PWA Manifest & Theme -->
@@ -15,38 +15,18 @@
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
 
     <style>
-        /* Жесткая блокировка сдвига viewport на уровне браузера */
+        /* Блокировка горизонтального скролла на корневом уровне */
         html, body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden !important;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            touch-action: pan-y !important;
-            overscroll-behavior: none !important;
-        }
-
-        /* Главный контейнер: скроллит только вертикально, горизонталь физически невозможна */
-        #app-root {
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
+            max-width: 100%;
             overflow-x: hidden !important;
-            -webkit-overflow-scrolling: touch;
-            position: relative;
+            touch-action: pan-y;
+            overscroll-behavior-y: none;
         }
 
         *, *::before, *::after {
             box-sizing: border-box !important;
-            max-width: 100%;
-            transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                        border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                        color 0.4s ease;
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
 
         body.theme-dark {
@@ -60,17 +40,16 @@
                 radial-gradient(circle at 50% 80%, rgba(245, 245, 220, 0.08) 0%, transparent 60%);
         }
         .theme-dark .glass-card {
-            background: rgba(20, 29, 24, 0.6);
+            background: rgba(20, 29, 24, 0.65);
             border: 1px solid rgba(163, 230, 53, 0.15);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         .theme-dark .glass-card:hover {
-            border-color: rgba(163, 230, 53, 0.4);
-            box-shadow: 0 8px 32px 0 rgba(163, 230, 53, 0.1);
+            border-color: rgba(163, 230, 53, 0.35);
         }
         .theme-dark .input-dark {
             background-color: #141d18;
-            border-color: rgba(63, 63, 70, 1);
+            border-color: rgba(63, 63, 70, 0.8);
             color: #e4e4e7;
         }
         .theme-dark .text-muted { color: #a8a29e; }
@@ -86,21 +65,14 @@
                 radial-gradient(circle at 80% 40%, rgba(204, 251, 241, 0.3) 0%, transparent 50%);
         }
         .theme-light .glass-card {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.8);
             border: 1px solid rgba(22, 58, 33, 0.12);
             box-shadow: 0 8px 32px 0 rgba(22, 58, 33, 0.04);
-        }
-        .theme-light .glass-card:hover {
-            border-color: rgba(77, 124, 15, 0.4);
-            box-shadow: 0 8px 32px 0 rgba(77, 124, 15, 0.08);
         }
         .theme-light .input-dark {
             background-color: #f4f3ee;
             border-color: rgba(212, 212, 216, 1);
             color: #1c241f;
-        }
-        .theme-light .input-dark:focus {
-            border-color: #4d7c0f;
         }
         .theme-light .text-muted { color: #71717a; }
         .theme-light .text-title { color: #1c241f; }
@@ -125,30 +97,24 @@
 
         .glass-card {
             backdrop-filter: blur(12px);
-            transition: transform 0.3s ease, border-color 0.5s ease, background-color 0.6s ease, box-shadow 0.6s ease;
-        }
-        .glass-card:hover {
-            transform: translateY(-2px);
+            transition: transform 0.2s ease, border-color 0.3s ease, background-color 0.3s ease;
         }
 
         .btn-gradient {
             background: linear-gradient(135deg, #163a21 0%, #a3e635 100%);
             color: #0d120f;
             font-weight: 600;
-            transition: opacity 0.2s, transform 0.1s;
         }
         .theme-light .btn-gradient {
             background: linear-gradient(135deg, #4d7c0f 0%, #a3e635 100%);
             color: #ffffff;
         }
-        .btn-gradient:hover { opacity: 0.9; }
-        .btn-gradient:active { transform: scale(0.98); }
 
         .input-dark {
             width: 100%;
             border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            transition: border-color 0.2s, background-color 0.6s, color 0.4s;
+            padding: 0.625rem 0.875rem;
+            transition: border-color 0.2s, background-color 0.3s;
         }
         .input-dark:focus {
             outline: none;
@@ -158,12 +124,9 @@
         .draggable-item {
             cursor: grab;
             user-select: none;
-            transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s ease, opacity 0.25s ease;
             touch-action: pan-y;
         }
-        .draggable-item:active {
-            cursor: grabbing;
-        }
+        .draggable-item:active { cursor: grabbing; }
         .draggable-item.dragging {
             opacity: 0.35;
             transform: scale(0.98);
@@ -171,137 +134,120 @@
 
         .drop-placeholder {
             border-radius: 0.75rem;
-            height: 60px;
+            height: 56px;
             transition: all 0.2s ease-in-out;
-            animation: pulse-border 1.5s infinite alternate;
         }
-
         .drop-placeholder.internal {
             border: 2px dashed #a3e635;
             background: rgba(163, 230, 53, 0.08);
         }
-        .theme-light .drop-placeholder.internal {
-            border-color: #4d7c0f;
-            background: rgba(77, 124, 15, 0.08);
-        }
-
         .drop-placeholder.foreign {
             border: 2px dashed #f59e0b;
             background: rgba(245, 158, 11, 0.12);
         }
-        .theme-light .drop-placeholder.foreign {
-            border-color: #d97706;
-            background: rgba(217, 119, 6, 0.12);
-        }
-
-        @keyframes pulse-border {
-            0% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
     </style>
 </head>
-<body class="theme-dark">
+<body class="theme-dark min-h-full flex flex-col antialiased">
 
-    <div id="app-root" class="pb-12">
+    <div class="glow-bg-container">
+        <div class="glow-bg"></div>
+    </div>
 
-        <div class="glow-bg-container">
-            <div class="glow-bg"></div>
-        </div>
-
-        <nav class="w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 flex justify-between items-center border-b border-zinc-800/40">
-            <div class="flex items-center gap-2">
-                <div class="w-4 h-4 rounded-full bg-lime-400 animate-pulse"></div>
-                <span class="text-xl font-bold tracking-wider text-title">Finlite <span class="accent-lime">DB</span></span>
+    <header class="w-full border-b border-zinc-800/40 sticky top-0 backdrop-blur-md z-10 bg-zinc-950/20">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="w-3.5 h-3.5 rounded-full bg-lime-400 animate-pulse shrink-0"></div>
+                <span class="text-lg font-bold tracking-wider text-title truncate">Finlite <span class="accent-lime">DB</span></span>
             </div>
-            <div class="flex items-center gap-4 sm:gap-6 text-sm">
-                <span id="btn-templates" class="text-lime-400 font-semibold select-none text-xs sm:text-sm">Шаблоны</span>
-
-                <button onclick="toggleTheme()" class="ml-2 p-2 rounded-xl bg-zinc-800/20 hover:bg-zinc-800/50 cursor-pointer text-lg transition" title="Сменить тему">
+            <div class="flex items-center gap-3 shrink-0">
+                <button onclick="toggleTheme()" class="p-2 rounded-xl bg-zinc-800/30 hover:bg-zinc-800/60 cursor-pointer text-base transition" title="Сменить тему">
                     🌗
                 </button>
             </div>
-        </nav>
+        </div>
+    </header>
 
-        <main class="w-full max-w-6xl mx-auto px-4 sm:px-6 mt-8 overflow-hidden">
+    <main class="w-full max-w-6xl mx-auto px-4 py-6 flex-1">
+        <div id="templates-page" class="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full min-w-0">
 
-            <div id="templates-page" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+            <!-- Левая колонка со списками -->
+            <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-8 w-full min-w-0">
+                <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
+            </section>
 
-                <section id="active-templates-container" class="lg:col-span-2 flex flex-col gap-12 w-full min-w-0">
-                    <div class="text-center py-12 text-muted italic">Загрузка сохраненных листов распределения...</div>
-                </section>
+            <!-- Правая колонка с калькулятором и конструктором -->
+            <section class="lg:col-span-1 w-full min-w-0">
+                <div class="flex flex-col gap-6 sticky top-20 w-full min-w-0">
 
-                <section class="lg:col-span-1 w-full min-w-0">
-                    <div class="flex flex-col gap-6 sticky top-6 w-full">
+                    <!-- Карточка расчета -->
+                    <div class="glass-card p-4 sm:p-5 rounded-2xl border-l-4 border-l-lime-400 w-full min-w-0">
+                        <h2 class="text-base font-bold text-title mb-1">Запустить расчёт</h2>
+                        <p class="text-xs text-muted mb-4">Укажите шаблон и сумму</p>
 
-                        <div class="glass-card p-4 sm:p-6 rounded-2xl border-l-4 border-l-lime-400 w-full">
-                            <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Запустить расчёт</h2>
-                            <p class="text-xs text-muted mb-4">Укажите название существующего шаблона и сумму</p>
-
-                            <div class="flex flex-col gap-3">
-                                <div>
-                                    <label class="block text-[11px] text-muted mb-1">Название шаблона в системе</label>
-                                    <input type="text" id="calc-template-name" list="templates-list" placeholder="Выберите или введите название..." class="input-dark py-2 text-sm" autocomplete="off">
-                                    <datalist id="templates-list"></datalist>
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
-                                    <input type="text" id="calc-amount" placeholder="Например: 55000" class="input-dark py-2 text-sm">
-                                </div>
-                                <button id="btn-calc" class="w-full btn-gradient py-2.5 rounded-xl text-sm cursor-pointer mt-1">
-                                    Рассчитать бюджет
-                                </button>
+                        <div class="flex flex-col gap-3">
+                            <div>
+                                <label class="block text-[11px] text-muted mb-1">Название шаблона</label>
+                                <input type="text" id="calc-template-name" list="templates-list" placeholder="Выберите из списка..." class="input-dark text-xs" autocomplete="off">
+                                <datalist id="templates-list"></datalist>
                             </div>
-                        </div>
-
-                        <div class="glass-card p-4 sm:p-6 rounded-2xl w-full">
-                            <h2 class="text-lg font-bold mb-1 text-title flex items-center gap-2">Создание шаблона</h2>
-                            <p class="text-xs text-muted mb-4">Формирование цепочки правил распределения</p>
-
-                            <div class="flex flex-col gap-3">
-                                <div>
-                                    <label class="block text-[11px] text-muted mb-1">Название шаблона</label>
-                                    <input type="text" id="tpl-name" placeholder="Например: Зарплата" class="input-dark py-2 text-sm">
-                                </div>
-
-                                <div class="border-t border-zinc-800/60 my-1 pt-2">
-                                    <span class="text-[11px] uppercase tracking-wider font-bold text-lime-400 block mb-2">Конструктор правил</span>
-
-                                    <div class="flex flex-col gap-2 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-800/50 mb-2">
-                                        <input type="text" id="rule-title" placeholder="Название (например: На проезд)" class="input-dark py-1.5 text-xs">
-                                        <input type="text" id="rule-desc" placeholder="Описание/Комментарий..." class="input-dark py-1.5 text-xs">
-
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <select id="payment-type" class="input-dark py-1.5 text-xs bg-zinc-900">
-                                                <option value="fix">Фикс сумма</option>
-                                                <option value="percentage">Процент %</option>
-                                            </select>
-                                            <input type="text" id="rule-value" placeholder="Значение" class="input-dark py-1.5 text-xs">
-                                        </div>
-
-                                        <button id="btn-add-rule" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-1.5 rounded-lg cursor-pointer transition">
-                                            + Добавить правило в список
-                                        </button>
-                                    </div>
-
-                                    <div id="temp-rules-list" class="text-[11px] text-muted flex flex-col gap-1 max-h-28 overflow-y-auto mb-2 p-1 bg-zinc-950/20 rounded">
-                                        <span class="italic text-zinc-600 p-1">Список правил пуст</span>
-                                    </div>
-                                </div>
-
-                                <button id="btn-save-tpl" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer mt-1 text-sm shadow">
-                                    Сохранить шаблон локально
-                                </button>
+                            <div>
+                                <label class="block text-[11px] text-muted mb-1">Сумма поступления (₸)</label>
+                                <input type="number" id="calc-amount" placeholder="55000" class="input-dark text-xs">
                             </div>
+                            <button id="btn-calc" class="w-full btn-gradient py-2.5 rounded-xl text-xs cursor-pointer mt-1">
+                                Рассчитать бюджет
+                            </button>
                         </div>
-
                     </div>
-                </section>
-            </div>
 
-        </main>
-    </div>
+                    <!-- Карточка создания шаблона -->
+                    <div class="glass-card p-4 sm:p-5 rounded-2xl w-full min-w-0">
+                        <h2 class="text-base font-bold text-title mb-1">Создание шаблона</h2>
+                        <p class="text-xs text-muted mb-3">Цепочка правил распределения</p>
 
-    <!-- Локальные модули (Local-First PWA) -->
+                        <div class="flex flex-col gap-3">
+                            <div>
+                                <label class="block text-[11px] text-muted mb-1">Название шаблона</label>
+                                <input type="text" id="tpl-name" placeholder="Зарплата" class="input-dark text-xs">
+                            </div>
+
+                            <div class="border-t border-zinc-800/60 pt-3">
+                                <span class="text-[10px] uppercase tracking-wider font-bold text-lime-400 block mb-2">Конструктор правил</span>
+
+                                <div class="flex flex-col gap-2 bg-zinc-900/50 p-3 rounded-xl border border-zinc-800/50 mb-2 min-w-0">
+                                    <input type="text" id="rule-title" placeholder="Название (например: На проезд)" class="input-dark text-xs">
+                                    <input type="text" id="rule-desc" placeholder="Описание/Комментарий..." class="input-dark text-xs">
+
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <select id="payment-type" class="input-dark text-xs bg-zinc-900">
+                                            <option value="fix">Фикс (₸)</option>
+                                            <option value="percentage">Процент (%)</option>
+                                        </select>
+                                        <input type="number" id="rule-value" placeholder="Значение" class="input-dark text-xs">
+                                    </div>
+
+                                    <button id="btn-add-rule" class="w-full bg-zinc-800 hover:bg-zinc-700 text-title text-[11px] py-2 rounded-lg cursor-pointer transition">
+                                        + Добавить правило
+                                    </button>
+                                </div>
+
+                                <div id="temp-rules-list" class="text-[11px] text-muted flex flex-col gap-1.5 max-h-32 overflow-y-auto mb-2 p-1">
+                                    <span class="italic text-zinc-600 p-1">Список правил пуст</span>
+                                </div>
+                            </div>
+
+                            <button id="btn-save-tpl" class="w-full btn-gradient py-2.5 rounded-xl cursor-pointer text-xs">
+                                Сохранить шаблон
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- JS Логика -->
     <script type="module">
         import { executeBudgetSimulation } from './engine.js';
         import {
@@ -319,16 +265,14 @@
         let placeholder = null;
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-                .then(() => console.log('PWA Service Worker зарегистрирован успешно'))
-                .catch(err => console.error('Ошибка регистрации SW:', err));
+            navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
         }
 
         const formatMoney = (amount) => {
             return new Intl.NumberFormat('ru-KZ', {
                 style: 'currency',
                 currency: 'KZT',
-                maximumFractionDigits: 2
+                maximumFractionDigits: 0
             }).format(amount);
         };
 
@@ -341,7 +285,7 @@
         function validateNumberInput(value) {
             const clean = value.toString().trim().replace(',', '.');
             if (clean === '' || isNaN(Number(clean)) || Number(clean) < 0) {
-                alert("⚠️ Ошибка: Введены некорректные символы суммы или отрицательное значение!");
+                alert("⚠️ Ошибка: Введено некорректное значение!");
                 return null;
             }
             return Number(clean);
@@ -367,47 +311,35 @@
                 container.innerHTML = templates.map(tpl => {
                     const rulesHtml = tpl.payments.map((p, idx) => {
                         const isPercent = p.type === 'percentage' || p.__type__ === 'Percentage';
-                        const badgeText = isPercent ? 'Процент' : 'Фикс';
+                        const badgeText = isPercent ? '%' : '₸';
                         const displayValue = isPercent ? `-${p.value}%` : `-${formatMoney(p.value)}`;
-                        const borderHighlight = isPercent ? 'border-l-2 border-l-rose-500/40' : '';
+                        const borderHighlight = isPercent ? 'border-l-2 border-l-rose-500/80' : 'border-l-2 border-l-lime-500/80';
 
                         return `
                             <div draggable="true"
                                  data-index="${idx}"
                                  data-template="${tpl.name}"
-                                 class="draggable-item glass-card p-3 sm:p-4 rounded-xl flex justify-between items-center relative pl-10 sm:pl-12 ${borderHighlight} w-full min-w-0">
+                                 class="draggable-item glass-card p-3 rounded-xl flex items-center justify-between gap-2 ${borderHighlight} w-full min-w-0">
 
-                                <div class="rule-badge absolute left-3 sm:left-4 w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 transition-colors duration-200">${idx + 1}</div>
-
-                                <div class="flex-1 pr-2 sm:pr-4 min-w-0 overflow-hidden">
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <h4 class="font-semibold text-title text-xs sm:text-sm truncate max-w-full">${p.description || 'Без описания'}</h4>
-                                        <span class="text-[9px] px-1 py-0.5 rounded bg-rose-950/30 text-rose-400 border border-rose-900/20 font-mono uppercase shrink-0">${badgeText}</span>
+                                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <span class="w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-[10px] font-bold text-center leading-5 text-zinc-400 shrink-0">${idx + 1}</span>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <h4 class="font-semibold text-title text-xs truncate max-w-full">${p.description || 'Без описания'}</h4>
+                                            <span class="text-[9px] px-1 py-0.2 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/50 uppercase shrink-0">${badgeText}</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                                    <span class="text-xs sm:text-base font-bold text-rose-500">${displayValue}</span>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <span class="text-xs font-bold text-rose-500 whitespace-nowrap">${displayValue}</span>
 
-                                    <button title="Зажмите и потяните для перемещения"
-                                            class="drag-handle p-1.5 sm:p-2 rounded-lg bg-zinc-800/30 hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 transition cursor-grab flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="8 7 12 3 16 7"></polyline>
-                                            <polyline points="8 17 12 21 16 17"></polyline>
-                                            <line x1="12" y1="3" x2="12" y2="21"></line>
-                                        </svg>
+                                    <button title="Перетащить" class="drag-handle p-1.5 rounded-lg bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 cursor-grab">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 7 12 3 16 7"/><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
                                     </button>
 
-                                    <button data-action="delete-rule" data-template="${tpl.name}" data-index="${idx}"
-                                            title="Удалить правило"
-                                            class="p-1.5 sm:p-2 rounded-lg bg-rose-950/20 hover:bg-rose-900/50 text-rose-400/70 hover:text-rose-400 border border-rose-900/20 hover:border-rose-800/40 transition cursor-pointer flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M3 6h18"/>
-                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                                            <line x1="10" y1="11" x2="10" y2="17"/>
-                                            <line x1="14" y1="11" x2="14" y2="17"/>
-                                        </svg>
+                                    <button data-action="delete-rule" data-template="${tpl.name}" data-index="${idx}" title="Удалить" class="p-1.5 rounded-lg bg-rose-950/30 text-rose-400 hover:bg-rose-900/50 cursor-pointer">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                                     </button>
                                 </div>
                             </div>
@@ -415,17 +347,16 @@
                     }).join('');
 
                     return `
-                        <div class="flex flex-col gap-6 w-full min-w-0">
-                            <div class="flex items-center justify-between border-b border-zinc-800/50 pb-4 gap-2 w-full">
-                                <div class="min-w-0">
-                                    <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-title flex items-center gap-2 truncate">Шаблон: ${tpl.name}</h2>
-                                    <p class="text-[11px] sm:text-xs text-muted mt-0.5">Правила обрабатываются строго по принципу FIFO (сверху вниз)</p>
+                        <div class="flex flex-col gap-3 w-full min-w-0">
+                            <div class="flex items-center justify-between border-b border-zinc-800/50 pb-2 gap-2 w-full">
+                                <div class="min-w-0 flex-1">
+                                    <h2 class="text-lg font-bold tracking-tight text-title truncate">${tpl.name}</h2>
                                 </div>
-                                <button data-action="delete-template" data-template="${tpl.name}" class="p-2 text-xs bg-rose-950/40 hover:bg-rose-900 text-rose-400 rounded-xl transition font-medium border border-rose-900/30 cursor-pointer flex items-center gap-1 shrink-0">
+                                <button data-action="delete-template" data-template="${tpl.name}" class="px-2.5 py-1 text-xs bg-rose-950/40 hover:bg-rose-900 text-rose-400 rounded-lg transition font-medium border border-rose-900/30 cursor-pointer shrink-0">
                                      Удалить
                                 </button>
                             </div>
-                            <div class="rules-container flex flex-col gap-3 min-h-[50px] relative before:absolute before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-zinc-800/40 w-full" data-template="${tpl.name}">
+                            <div class="rules-container flex flex-col gap-2 min-h-[40px] w-full min-w-0" data-template="${tpl.name}">
                                 ${rulesHtml}
                             </div>
                         </div>
@@ -533,7 +464,7 @@
                 btn.onclick = async () => {
                     const name = btn.getAttribute('data-template');
                     const idx = parseInt(btn.getAttribute('data-index'));
-                    if (confirm(`Удалить правило №${idx + 1} из шаблона "${name}"?`)) {
+                    if (confirm(`Удалить правило №${idx + 1}?`)) {
                         const tpl = await getTemplateDB(name);
                         tpl.payments.splice(idx, 1);
                         await updateTemplatePaymentsDB(name, tpl.payments);
@@ -545,7 +476,7 @@
             document.querySelectorAll('[data-action="delete-template"]').forEach(btn => {
                 btn.onclick = async () => {
                     const name = btn.getAttribute('data-template');
-                    if (confirm(`Вы действительно хотите удалить весь шаблон "${name}"?`)) {
+                    if (confirm(`Удалить шаблон "${name}"?`)) {
                         await deleteTemplateDB(name);
                         await loadAllTemplates();
                     }
@@ -566,7 +497,6 @@
             }
 
             const finalDescription = desc ? `${title} (${desc})` : title;
-
             currentTemplatePayments.push({ type, value, description: finalDescription });
 
             document.getElementById('rule-title').value = '';
@@ -583,9 +513,9 @@
                 return;
             }
             container.innerHTML = currentTemplatePayments.map((p, idx) =>
-                `<div class="p-1 bg-zinc-900/60 rounded mb-1 text-title flex justify-between items-center text-[11px]">
-                    <span class="truncate pr-2">${idx + 1}. <b>${p.type === 'fix' ? 'ФИКС' : 'ПРОЦЕНТ'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
-                    <button data-remove-temp="${idx}" class="text-rose-400 hover:text-rose-500 px-1 font-bold shrink-0">✕</button>
+                `<div class="p-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg text-title flex justify-between items-center text-[11px] gap-2 min-w-0">
+                    <span class="truncate min-w-0"><b>${idx + 1}. ${p.type === 'fix' ? 'ФИКС' : '%'}</b>: ${p.value}${p.type === 'fix' ? ' ₸' : '%'} — <i>${p.description}</i></span>
+                    <button data-remove-temp="${idx}" class="text-rose-400 hover:text-rose-500 font-bold shrink-0 px-1">✕</button>
                  </div>`
             ).join('');
 
@@ -624,7 +554,7 @@
 
             const template = await getTemplateDB(templateName);
             if (!template) {
-                alert(`Шаблон "${templateName}" не найден в локальной базе!`);
+                alert(`Шаблон "${templateName}" не найден!`);
                 return;
             }
 
@@ -645,10 +575,10 @@
                 if (item.status === 'ok') {
                     statusBadge = '<span class="text-[10px] text-emerald-400 font-semibold">Успешно</span>';
                 } else if (item.status === 'insufficient_funds') {
-                    statusBadge = '<span class="text-[10px] text-rose-400 font-semibold">Ошибка: Не хватило средств</span>';
+                    statusBadge = '<span class="text-[10px] text-rose-400 font-semibold">Ошибка</span>';
                     borderStyle = 'border-rose-500/50 bg-rose-950/20';
                 } else if (item.status === 'zero_balance_stop') {
-                    statusBadge = '<span class="text-[10px] text-amber-400 font-semibold">Остановка: Баланс 0 ₸</span>';
+                    statusBadge = '<span class="text-[10px] text-amber-400 font-semibold">Баланс 0 ₸</span>';
                     borderStyle = 'border-amber-500/50 bg-amber-950/20';
                 }
 
@@ -659,13 +589,13 @@
                 }
 
                 return `
-                    <div class="glass-card p-3 rounded-xl border ${borderStyle} flex flex-col gap-1 text-xs min-w-0 w-full">
-                        <div class="flex justify-between items-center gap-2">
-                            <span class="font-bold text-title truncate">${item.step}. ${item.description}</span>
+                    <div class="glass-card p-2.5 rounded-xl border ${borderStyle} flex flex-col gap-1 text-xs w-full min-w-0">
+                        <div class="flex justify-between items-center gap-2 min-w-0">
+                            <span class="font-bold text-title truncate flex-1 min-w-0">${item.step}. ${item.description}</span>
                             ${statusBadge}
                         </div>
                         <div class="flex justify-between items-center text-muted text-[11px] mt-1 gap-2 flex-wrap">
-                            <span>Вычитаемая сумма: <b class="text-rose-400">${displayDeducted}</b></span>
+                            <span>Сумма: <b class="text-rose-400">${displayDeducted}</b></span>
                             <span>Остаток: <b class="text-lime-400">${formatMoney(item.balance_after)}</b></span>
                         </div>
                     </div>
@@ -673,16 +603,16 @@
             }).join('');
 
             const outputHtml = `
-                <div id="calc-output-card" class="glass-card p-4 sm:p-6 rounded-2xl border-l-4 ${r.success ? 'border-l-lime-400' : 'border-l-rose-500'} mb-8 w-full">
-                    <div class="flex justify-between items-center mb-4 gap-2">
-                        <div class="min-w-0">
-                            <h3 class="text-lg sm:text-xl font-bold text-title truncate">Детализация: ${r.template_name}</h3>
-                            <p class="text-xs text-muted">Исходный баланс: ${formatMoney(r.initial_amount)} | Остаток: ${formatMoney(r.final_balance)}</p>
+                <div id="calc-output-card" class="glass-card p-4 sm:p-5 rounded-2xl border-l-4 ${r.success ? 'border-l-lime-400' : 'border-l-rose-500'} mb-4 w-full min-w-0">
+                    <div class="flex justify-between items-center mb-3 gap-2">
+                        <div class="min-w-0 flex-1">
+                            <h3 class="text-base font-bold text-title truncate">${r.template_name}</h3>
+                            <p class="text-xs text-muted">Исходный: ${formatMoney(r.initial_amount)} | Остаток: ${formatMoney(r.final_balance)}</p>
                         </div>
-                        <button onclick="document.getElementById('calc-output-card').remove()" class="text-muted hover:text-title text-sm cursor-pointer shrink-0">✕ Закрыть</button>
+                        <button onclick="document.getElementById('calc-output-card').remove()" class="text-muted hover:text-title text-sm cursor-pointer shrink-0 p-1">✕</button>
                     </div>
 
-                    <div class="flex flex-col gap-2 mt-4 w-full">
+                    <div class="flex flex-col gap-2 w-full min-w-0">
                         ${historyItems}
                     </div>
                 </div>
