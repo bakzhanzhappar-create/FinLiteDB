@@ -1,57 +1,34 @@
-const CACHE_NAME = `finlite-v-${Date.now()}`;
-const ASSETS_TO_CACHE = [
-    './',
-    './index.html',
-    './manifest.json',
-    './icon.png',
-    'https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4',
-    'https://unpkg.com/dexie/dist/dexie.js'
-];
-
-self.addEventListener('install', (event) => {
-    self.skipWaiting();
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
-    );
+const VERSION = 'v3';
+const CACHE = `finlite:${self.registration.scope}:${VERSION}`;
+const ASSETS = ['./', './index.html', './styles.css', './app.js', './engine.js', './db.js', './i18n.js', './manifest.json', './icon.svg', './icons/icon-192.png', './icons/icon-512.png'];
+self.addEventListener('install', event => {
+    event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS.map(path => new Request(new URL(path, self.location), { cache: 'reload' })))));
 });
-
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((keys) => {
-            return Promise.all(
-                keys.map((key) => {
-                    if (key !== CACHE_NAME) {
-                        return caches.delete(key);
-                    }
-                })
-            );
-        }).then(() => self.clients.claim())
-    );
+self.addEventListener('message', event => {
+    if (event.data?.type === 'ACTIVATE') self.skipWaiting();
+    if (event.data?.type === 'OFFLINE_STATUS' && event.ports[0]) {
+        event.waitUntil((async () => {
+            const cache = await caches.open(CACHE);
+            const assets = await Promise.all(ASSETS.map(path => cache.match(new URL(path, self.location).href)));
+            event.ports[0].postMessage({ ready: assets.every(Boolean) });
+        })());
+    }
 });
-
-self.addEventListener('fetch', (event) => {
-    if (event.request.method !== 'GET') return;
-
-    event.respondWith(
-        fetch(event.request)
-            .then((networkResponse) => {
-                if (networkResponse && networkResponse.status === 200) {
-                    const responseToCache = networkResponse.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseToCache);
-                    });
-                }
-                return networkResponse;
-            })
-            .catch(() => {
-                return caches.match(event.request).then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-                    if (event.request.mode === 'navigate') {
-                        return caches.match('./index.html');
-                    }
-                });
-            })
-    );
+self.addEventListener('activate', event => {
+    const prefix = `finlite:${self.registration.scope}:`;
+    event.waitUntil((async () => {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter(key => key !== CACHE && (key.startsWith(prefix) || /^finlite-v-\d+$/.test(key))).map(key => caches.delete(key)));
+        await self.clients.claim();
+    })());
+});
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+    if (event.request.method !== 'GET' || url.origin !== self.location.origin || !url.href.startsWith(self.registration.scope)) return;
+    event.respondWith((async () => {
+        const cache = await caches.open(CACHE);
+        // Keep all code on the same installed version, even while an update waits.
+        const cached = await cache.match(event.request.mode === 'navigate' ? new URL('./index.html', self.location).href : event.request, { ignoreSearch: true });
+        return cached || fetch(event.request);
+    })());
 });

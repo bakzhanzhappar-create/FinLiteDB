@@ -6,3 +6,6 @@
 __pycache__/
 *.log
 tmp/
+node_modules/
+test-results/
+playwright-report/

@@ -1,17 +1,14 @@
 {
-  "short_name": "FinliteDB",
-  "name": "Finlite DB — Финансовый Журнал",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/2382/2382461.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any maskable"
-    }
-  ],
+  "id": "./index.html",
+  "name": "Finlite",
+  "short_name": "Finlite",
   "start_url": "./index.html",
-  "background_color": "#0d120f",
-  "theme_color": "#0d120f",
+  "scope": "./",
   "display": "standalone",
-  "orientation": "portrait"
+  "background_color": "#f5f6f1",
+  "theme_color": "#f5f6f1",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
 }
